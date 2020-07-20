@@ -1,7 +1,7 @@
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 void main() {
   runApp(MyApp());
@@ -48,7 +48,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  CameraView cameraView;
+  BarcodeScannerView cameraView;
   var exitCameraButton;
   var addInventoryButton;
   var historyView;
@@ -72,7 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
       onPressed: () {
         setState(() {
           showBottomAppBar = false;
-          cameraView = CameraView();
+          cameraView = BarcodeScannerView();
           exitCameraButton = IconButton(
             icon: Icon(Icons.close),
             onPressed: () {
@@ -85,7 +85,10 @@ class _MyHomePageState extends State<MyHomePage> {
           );
         });
       },
-      child: Text("Inventariere"),
+      child: Row(children: <Widget>[
+        Icon(Icons.settings_overscan),
+        Text("Inventariere"),
+      ],),
       color: Theme.of(context).primaryColorDark,
     );
     return Scaffold(
@@ -99,68 +102,29 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class CameraView extends StatefulWidget {
+class BarcodeScannerView extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
-    return _CameraView();
+    return _BarcodeScannerView();
   }
 }
 
-class _CameraView extends State<CameraView> {
-  CameraController cameraController;
-  Future<void> _initializeControllerFuture;
-  var isCameraReady = false;
-  var showCapturedPhoto = false;
-  var imagePath;
+class _BarcodeScannerView extends State<BarcodeScannerView> {
+  var _value;
 
-  @override
-  void initState() {
-    super.initState();
-    _initializeCamera();
-  }
-
-  Future<void> _initializeCamera() async {
-    final cameras = await availableCameras();
-    final firstCamera = cameras.first;
-    cameraController = CameraController(firstCamera, ResolutionPreset.high);
-    _initializeControllerFuture = cameraController.initialize();
-    if (!mounted) {
-      return;
-    }
+  Future _scan() async {
+    var _result =
+        await FlutterBarcodeScanner.scanBarcode("#004297", "Cancel", true);
     setState(() {
-      isCameraReady = true;
+      _value = Container(
+        child: Text(_result),
+      );
     });
-  }
-
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _initializeControllerFuture = cameraController?.initialize();
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final deviceRatio = size.width / size.height;
-    return FutureBuilder<void>(
-      future: _initializeControllerFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          // If the Future is complete, display the preview.
-          return Transform.scale(
-              scale: cameraController.value.aspectRatio / deviceRatio,
-              child: Center(
-                child: AspectRatio(
-                  aspectRatio: cameraController.value.aspectRatio,
-                  child: CameraPreview(cameraController), //cameraPreview
-                ),
-              ));
-        } else {
-          return Center(
-              child:
-                  CircularProgressIndicator()); // Otherwise, display a loading indicator.
-        }
-      },
-    );
+    _scan();
+    return _value;
   }
 }
