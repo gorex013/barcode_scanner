@@ -40,7 +40,6 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
-
   final String title;
 
   @override
@@ -48,83 +47,49 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  BarcodeScannerView cameraView;
-  var exitCameraButton;
-  var addInventoryButton;
-  var historyView;
-  var showBottomAppBar;
+  List<String> history;
 
-  @override
-  void initState() {
-    super.initState();
-    showBottomAppBar = true;
-    historyView = ListView.builder(
-        itemCount: 20,
-        itemBuilder: (context, index) => ListTile(
-              title: Text("${index + 1}. Item$index"),
-            ));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    addInventoryButton = RaisedButton(
-      padding: EdgeInsets.symmetric(horizontal: 100),
-      onPressed: () {
-        setState(() {
-          showBottomAppBar = false;
-          cameraView = BarcodeScannerView();
-          exitCameraButton = IconButton(
-            icon: Icon(Icons.close),
-            onPressed: () {
-              setState(() {
-                showBottomAppBar = true;
-                exitCameraButton = null;
-                cameraView = null;
-              });
-            },
-          );
-        });
-      },
-      child: Row(children: <Widget>[
-        Icon(Icons.settings_overscan),
-        Text("Inventariere"),
-      ],),
-      color: Theme.of(context).primaryColorDark,
-    );
-    return Scaffold(
-      appBar: AppBar(
-        leading: exitCameraButton,
-        title: Text(widget.title),
-      ),
-      body: (cameraView == null) ? historyView : cameraView,
-      bottomNavigationBar: (showBottomAppBar) ? addInventoryButton : null,
-    );
-  }
-}
-
-class BarcodeScannerView extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() {
-    return _BarcodeScannerView();
-  }
-}
-
-class _BarcodeScannerView extends State<BarcodeScannerView> {
-  var _value;
-
-  Future _scan() async {
-    var _result =
-        await FlutterBarcodeScanner.scanBarcode("#004297", "Cancel", true);
+  void _scan() async {
+    var _result = await FlutterBarcodeScanner.scanBarcode(
+        "#ff4297", "Cancel", true, ScanMode.DEFAULT);
     setState(() {
-      _value = Container(
-        child: Text(_result),
-      );
+      history.add("Barcode: " + _result);
     });
   }
 
   @override
+  void initState() {
+    super.initState();
+    history = [];
+  }
+
+  @override
   Widget build(BuildContext context) {
-    _scan();
-    return _value;
+    var addInventoryButton = RaisedButton(
+      padding: EdgeInsets.symmetric(horizontal: 100),
+      onPressed: () {
+        _scan();
+      },
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: <Widget>[
+          Icon(Icons.settings_overscan),
+          Text("Inventariere"),
+        ],
+      ),
+      color: Theme.of(context).primaryColorDark,
+    );
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: ListView.builder(
+        itemCount: history.length,
+        itemBuilder: (context, index) => ListTile(
+          title: Text("${index + 1}. ${history[index]}"),
+        ),
+      ),
+      bottomNavigationBar: addInventoryButton,
+    );
   }
 }
