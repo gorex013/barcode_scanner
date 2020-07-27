@@ -1,4 +1,4 @@
-import 'package:barcode_scanner/add_product_quantity_dialog.dart';
+import 'package:barcode_scanner/product_quantity_dialogs.dart';
 import 'package:barcode_scanner/database_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -20,14 +20,16 @@ class _HomePageState extends State<HomePage> {
     var _result = await FlutterBarcodeScanner.scanBarcode(
         "#ff4297", "Cancel", true, ScanMode.DEFAULT);
     bool exists = await dbHelper.queryExists(_result);
-    if (exists){
-      showDialog(context: context, builder: (context) => AlertDialog(
-        content: Text("Produsul $_result există deja în baza de date."),
-      ));
+    if (exists) {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+                content: Text("Produsul $_result există deja în baza de date."),
+              ));
       return;
     }
     if (_result != '-1')
-    setState(() {
+      setState(() {
         dbHelper.insert(
           {
             Barcode.barcode: _result,
@@ -35,11 +37,13 @@ class _HomePageState extends State<HomePage> {
           },
         );
         _getBarcodes();
-    });
+      });
   }
-  _getBarcodes()async{
+
+  _getBarcodes() async {
     history = dbHelper.queryAllRows();
   }
+
   @override
   void initState() {
     super.initState();
@@ -62,82 +66,90 @@ class _HomePageState extends State<HomePage> {
       ),
     );
     return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.title),
-        ),
-        body: FutureBuilder(
-          future: dbHelper.queryAllRows(),
-          builder: (context, snapshot) {
-            List<Widget> children = [];
-            if (snapshot.hasError) {
-              children = <Widget>[
-                Icon(
-                  Icons.error_outline,
-                  color: Colors.red,
-                  size: 60,
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: Text('Error: ${snapshot.error}'),
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: FutureBuilder(
+        future: dbHelper.queryAllRows(),
+        builder: (context, snapshot) {
+          List<Widget> children = [];
+          if (snapshot.hasError) {
+            children = <Widget>[
+              Icon(
+                Icons.error_outline,
+                color: Colors.red,
+                size: 60,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Text('Error: ${snapshot.error}'),
+              )
+            ];
+          } else {
+            history = snapshot.data;
+          }
+          return (history == null)
+              ? Column(
+                  children: children,
                 )
-              ];
-            } else {
-              history = snapshot.data;
-            }
-            return (history == null)
-                ? Column(
-                    children: children,
-                  )
-                : ListView.builder(
-                    itemCount: history.length,
-                    itemBuilder: (context, i) {
-                      var dateTime = DateTime.parse(history[i]['start_date']);
-                      return ListTile(
-                        title: Text(
-                            "${i + 1}. Barcode: ${history[i]['barcode']}\n"
-                            "Date: ${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}"),
-                      );
-                    },
-                  );
-          },
-        ),
-        bottomNavigationBar: addInventoryButton,
-        floatingActionButton: Row(
-          children: [
-            RaisedButton.icon(
-              label: Text("Adaugă la depozit"),
-              icon: Icon(Icons.arrow_downward),
-              onPressed: () async {
-                var barcodes = await dbHelper.queryAllRows();
-                showDialog(
-                  context: context,
-                  builder: (context) {
-                    return AddQuantityDialog(
-                      barcodes: barcodes,
+              : ListView.builder(
+                  itemCount: history.length,
+                  itemBuilder: (context, i) {
+                    var dateTime = DateTime.parse(history[i]['start_date']);
+                    return ListTile(
+                      title: Text(
+                          "${i + 1}. Barcode: ${history[i]['barcode']}\n"
+                          "Date: ${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}"),
                     );
                   },
                 );
-              },
-            ),
-            RaisedButton.icon(
-              label: Text("Extrage din depozit"),
-              onPressed: () async {
-                var barcodes = await dbHelper.queryAllRows();
-                showDialog(
-                  context: context,
-                  builder: (context) {
-                    return ExtractQuantityDialog(
-                      barcodes: barcodes,
-                    );
-                  },
-                );
-              },
-              icon: Icon(Icons.arrow_upward),
-            ),
-          ],
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          crossAxisAlignment: CrossAxisAlignment.center,
-        ),
+        },
+      ),
+      bottomNavigationBar: addInventoryButton,
+      floatingActionButton: Row(
+        children: [
+          RaisedButton.icon(
+            label: Text("Adaugă la depozit"),
+            icon: Icon(Icons.arrow_downward),
+            onPressed: () async {
+              var barcodes = await dbHelper.queryAllRows();
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return (barcodes != null && barcodes.length > 0)
+                      ? AddQuantityDialog(
+                          barcodes: barcodes,
+                        )
+                      : AlertDialog(
+                          content: Text("No products registred"),
+                        );
+                },
+              );
+            },
+          ),
+          RaisedButton.icon(
+            label: Text("Extrage din depozit"),
+            onPressed: () async {
+              var barcodes = await dbHelper.queryAllRows();
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return (barcodes != null && barcodes.length > 0)
+                      ? ExtractQuantityDialog(
+                          barcodes: barcodes,
+                        )
+                      : AlertDialog(
+                          content: Text("No products registred"),
+                        );
+                },
+              );
+            },
+            icon: Icon(Icons.arrow_upward),
+          ),
+        ],
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.center,
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
