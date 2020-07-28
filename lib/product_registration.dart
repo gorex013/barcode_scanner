@@ -1,9 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 import 'barcode_database_helper.dart';
 
-class RegisterProduct extends StatefulWidget{
+class RegisterProduct extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _RegisterProduct();
 }
@@ -21,8 +22,8 @@ class _RegisterProduct extends State<RegisterProduct> {
       showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            content: Text("Produsul $_result există deja în baza de date."),
-          ));
+                content: Text("Produsul $_result există deja în baza de date."),
+              ));
       return;
     }
     if (_result != '-1')
@@ -38,15 +39,16 @@ class _RegisterProduct extends State<RegisterProduct> {
 
   @override
   Widget build(BuildContext context) {
-    var addInventoryButton = RaisedButton.icon(
-      padding: EdgeInsets.symmetric(horizontal: 100),
-      onPressed: () {
-        _scan();
-      },
-      label: Text("Adaugă produs"),
-      icon: Icon(Icons.settings_overscan),
-    );
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(Icons.arrow_back),
+        ),
+        title: Text("Înregistrare produse"),
+      ),
       body: FutureBuilder(
         future: dbHelper.queryAllRows(),
         builder: (context, snapshot) {
@@ -68,22 +70,33 @@ class _RegisterProduct extends State<RegisterProduct> {
           }
           return (history == null)
               ? Column(
-            children: children,
-          )
+                  children: children,
+                )
               : ListView.builder(
-            itemCount: history.length,
-            itemBuilder: (context, i) {
-              var dateTime = DateTime.parse(history[i]['start_date']);
-              return ListTile(
-                title: Text(
-                    "${i + 1}. Barcode: ${history[i]['barcode']}\n"
-                        "Date: ${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}"),
-              );
-            },
-          );
+                  itemCount: history.length,
+                  itemBuilder: (context, i) {
+                    var dateTime = DateTime.parse(history[i]['start_date']);
+                    return ListTile(
+                      title: Text(
+                          "${i + 1}. Barcode: ${history[i]['barcode']}\n"
+                          "Date: ${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}"),
+                    );
+                  },
+                );
         },
       ),
-      bottomNavigationBar: addInventoryButton,
+      bottomNavigationBar: SizedBox(
+        width: MediaQuery.of(context).size.width - 20,
+        child: RaisedButton.icon(
+          onPressed: () {
+            _scan();
+          },
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          label: Text("Scanare"),
+          icon: Icon(Icons.settings_overscan),
+        ),
+      ),
     );
   }
 }
