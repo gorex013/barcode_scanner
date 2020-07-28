@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
-import 'barcode_database_helper.dart';
+import 'database_management.dart';
 
 class RegisterProduct extends StatefulWidget {
   @override
@@ -10,14 +10,15 @@ class RegisterProduct extends StatefulWidget {
 }
 
 class _RegisterProduct extends State<RegisterProduct> {
-  final dbHelper = Barcode.instance;
-
   var history;
 
   void _scan() async {
     var _result = await FlutterBarcodeScanner.scanBarcode(
         "#ff4297", "Cancel", true, ScanMode.DEFAULT);
-    bool exists = await dbHelper.queryExists(_result);
+    var queryResult = await Barcode.query(
+      where: '${Barcode.barcode} = \"$_result\"',
+    );
+    bool exists = queryResult.length != 0;
     if (exists) {
       showDialog(
           context: context,
@@ -27,14 +28,12 @@ class _RegisterProduct extends State<RegisterProduct> {
       return;
     }
     if (_result != '-1')
-      setState(() {
-        dbHelper.insert(
+        Barcode.insert(
           {
-            Barcode.barcode: _result,
+            Barcode.barcode: '\"'+_result+'\"',
             Barcode.startDate: DateTime.now().toIso8601String()
           },
         );
-      });
   }
 
   @override
@@ -50,7 +49,7 @@ class _RegisterProduct extends State<RegisterProduct> {
         title: Text("Înregistrare produse"),
       ),
       body: FutureBuilder(
-        future: dbHelper.queryAllRows(),
+        future: Barcode.query(),
         builder: (context, snapshot) {
           List<Widget> children = [];
           if (snapshot.hasError) {
