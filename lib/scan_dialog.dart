@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
-
-
-
 class ScanDialog extends StatefulWidget {
   final title;
   final barcode;
   final doneButton;
+
   static _scan() async {
     return FlutterBarcodeScanner.scanBarcode(
         "#ff4297", "Anulează", true, ScanMode.DEFAULT);
   }
+
   ScanDialog(this.title, this.doneButton, this.barcode);
 
   @override
@@ -19,22 +18,25 @@ class ScanDialog extends StatefulWidget {
 }
 
 class _ScanDialog extends State<ScanDialog> {
+  var scanController = TextEditingController();
+  var quantityController = TextEditingController();
+  var quantityFocusNode = FocusNode();
+
   @override
   Widget build(BuildContext context) {
-    var scanController = TextEditingController();
     scanController.text = widget.barcode;
-    var quantityController = TextEditingController();
     return AlertDialog(
-      insetPadding: EdgeInsets.symmetric(
-          horizontal: MediaQuery.of(context).size.width / 6,
-          vertical: MediaQuery.of(context).size.height / 4),
+      insetPadding: EdgeInsets.only(
+          left: MediaQuery.of(context).size.width / 6,
+          right: MediaQuery.of(context).size.width / 6,
+          top: 30,
+          bottom: 270),
       title: widget.title,
       content: Column(
         children: <Widget>[
           TextField(
             decoration: InputDecoration(labelText: "Barcode: "),
             controller: scanController,
-            focusNode: FocusNode(),
             enableInteractiveSelection: false,
             showCursor: false,
             onTap: () async {
@@ -49,9 +51,18 @@ class _ScanDialog extends State<ScanDialog> {
               hintText: "Cantitate de produs ... ",
             ),
             controller: quantityController,
-            focusNode: FocusNode(),
+            focusNode: quantityFocusNode,
             keyboardType: TextInputType.number,
             textInputAction: TextInputAction.done,
+            onSubmitted: (text) {
+              quantityFocusNode.unfocus();
+            },
+            onTap: (){
+              FocusScope.of(context).requestFocus(quantityFocusNode);
+            },
+            onEditingComplete: (){
+              quantityFocusNode.unfocus();
+            },
           ),
         ],
       ),

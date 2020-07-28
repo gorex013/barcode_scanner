@@ -31,7 +31,7 @@ class _ImportWarehouse extends State<ImportWarehouse> {
               Radius.circular(20),
             ),
           ),
-          label: Text("Scanare"),
+          label: Text("Depozitare"),
           icon: Icon(Icons.arrow_downward),
           onPressed: () async {
             var result = await FlutterBarcodeScanner.scanBarcode(
