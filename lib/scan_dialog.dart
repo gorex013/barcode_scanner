@@ -44,8 +44,8 @@ class _ScanDialog extends State<ScanDialog> {
         var number = int.tryParse(quantityController.text, radix: 10);
         if (emptyQuantity) {
           setState(() {
-            emptyQuantity = quantityController.text != "" && number > 0;
-            emptyQuantityPressed = true;
+            emptyQuantity = quantityController.text == "" || number < 0;
+            emptyQuantityPressed = emptyQuantity;
           });
           return;
         }
@@ -135,7 +135,16 @@ class _ScanDialog extends State<ScanDialog> {
           ),
         ],
       ),
-      actions: [(unregistered) ? registerButton : actionButton],
+      actions: [
+        RaisedButton.icon(
+          label: Text("Anulare"),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(Icons.cancel),
+        ),
+        (unregistered) ? registerButton : actionButton
+      ],
     );
   }
 }
