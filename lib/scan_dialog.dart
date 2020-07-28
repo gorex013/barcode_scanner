@@ -25,35 +25,48 @@ class _ScanDialog extends State<ScanDialog> {
   var unregistered = false;
   var unscanned = true;
 
+  bool emptyQuantity = true;
+  var emptyQuantityPressed = false;
+
+  var unscannedPressed = false;
+
   @override
   Widget build(BuildContext context) {
-    if (unscanned) scanController.text = "Apasă pentru a scana barcod";
-    var actionButtons = <Widget>[
-      RaisedButton.icon(
-        onPressed: () async {
-          if (scanController.text == "Apasă pentru a scana") {
-            return;
-          }
-          var barcodeID = await Barcode.query(
-            columns: [Barcode.id],
-            where: '${Barcode.barcode} = \"${scanController.text}\"',
-          );
-          print(barcodeID);
-          barcodeID = barcodeID[0][Barcode.id];
-          widget.transactionInsert(
-              widget.mapperFunction(barcodeID, quantityController.text));
-          Navigator.pop(context);
-        },
-        icon: Icon(Icons.done),
-        label: Text("Terminat"),
-      ),
-    ];
+    if (unscanned) scanController.text = "Apasă aici pentru a scana barcod";
+    var actionButton = RaisedButton.icon(
+      onPressed: () async {
+        if (unscanned) {
+          setState(() {
+            unscannedPressed = true;
+          });
+          return;
+        }
+        var number = int.tryParse(quantityController.text, radix: 10);
+        if (emptyQuantity) {
+          setState(() {
+            emptyQuantity = quantityController.text != "" && number > 0;
+            emptyQuantityPressed = true;
+          });
+          return;
+        }
+        var barcodeID = await Barcode.query(
+          columns: [Barcode.id],
+          where: '${Barcode.barcode} = \"${scanController.text}\"',
+        );
+        barcodeID = barcodeID[0][Barcode.id];
+        widget.transactionInsert(
+            widget.mapperFunction(barcodeID, quantityController.text));
+        Navigator.pop(context);
+      },
+      icon: Icon(Icons.done),
+      label: Text("Terminat"),
+    );
     var registerButton = RaisedButton.icon(
       onPressed: () async {
         setState(() {
           Barcode.insert(
             {
-              Barcode.barcode:  scanController.text,
+              Barcode.barcode: scanController.text,
               Barcode.startDate: DateTime.now().toIso8601String()
             },
           );
@@ -64,7 +77,6 @@ class _ScanDialog extends State<ScanDialog> {
       icon: Icon(Icons.add),
       label: Text("Înregistrează"),
     );
-    if (unregistered) actionButtons.add(registerButton);
     return AlertDialog(
       insetPadding: EdgeInsets.only(top: 30, bottom: 270),
       title: widget.title,
@@ -73,8 +85,9 @@ class _ScanDialog extends State<ScanDialog> {
           TextField(
             decoration: InputDecoration(
                 labelText: "Barcode: ",
-                errorText:
-                    (unregistered) ? "Produsul nu este înregistrat" : null),
+                errorText: (unscannedPressed)
+                    ? "Scanați barcod"
+                    : (unregistered) ? "Produsul nu este înregistrat" : null),
             controller: scanController,
             enableInteractiveSelection: false,
             showCursor: false,
@@ -82,8 +95,9 @@ class _ScanDialog extends State<ScanDialog> {
               var result = await ScanDialog._scan();
               if (result == '-1') {
                 setState(() {
-                  scanController.text = "Apasă pentru a scana barcod";
+                  scanController.text = "Apasă aici pentru a scana barcod";
                   unscanned = true;
+                  unscannedPressed = true;
                 });
                 return;
               }
@@ -94,6 +108,7 @@ class _ScanDialog extends State<ScanDialog> {
                 scanController.text = result;
                 unregistered = _unregistered;
                 unscanned = false;
+                unscannedPressed = false;
               });
             },
           ),
@@ -101,6 +116,8 @@ class _ScanDialog extends State<ScanDialog> {
             decoration: InputDecoration(
               labelText: "Cantitate: ",
               hintText: "Cantitate de produs ... ",
+              errorText:
+                  (emptyQuantityPressed) ? "Completați cantitatea" : null,
             ),
             controller: quantityController,
             focusNode: quantityFocusNode,
@@ -118,7 +135,7 @@ class _ScanDialog extends State<ScanDialog> {
           ),
         ],
       ),
-      actions: actionButtons,
+      actions: [(unregistered) ? registerButton : actionButton],
     );
   }
 }
