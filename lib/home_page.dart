@@ -23,7 +23,7 @@ class _HomePageState extends State<HomePage> {
               Radius.circular(20),
             ),
           ),
-          label: Text("Adaugă produs"),
+          label: Text("Înregistrare produs"),
           icon: Icon(Icons.settings_overscan),
           onPressed: () {
             Navigator.pushNamed(context, '/register-product');
@@ -40,7 +40,7 @@ class _HomePageState extends State<HomePage> {
                   Radius.circular(20),
                 ),
               ),
-              label: Text("Adaugă la depozit"),
+              label: Text("Depozitare produse"),
               icon: Icon(Icons.arrow_downward),
               onPressed: () {
                 Navigator.pushNamed(context, '/import-warehouse');
@@ -55,7 +55,7 @@ class _HomePageState extends State<HomePage> {
                   Radius.circular(20),
                 ),
               ),
-              label: Text("Extrage din depozit"),
+              label: Text("Extragere produse"),
               onPressed: () async {
                 Navigator.pushNamed(context, '/export-warehouse');
               },
