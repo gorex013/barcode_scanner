@@ -90,9 +90,9 @@ class Barcode {
 
   Future<bool> queryExists(barcode) async {
     Database db = await instance.database;
-    return Sqflite.firstIntValue(await db.query(
-            'SELECT COUNT(*) FROM $table WHERE ${Barcode.barcode} == ?',
-            whereArgs: [barcode])) ==
-        1;
+    var products = await db.rawQuery(
+            'SELECT COUNT(*) as count FROM $table WHERE ${Barcode.barcode} == ?',
+            [barcode]);
+    return  products[0]['count'] == 1;
   }
 }
