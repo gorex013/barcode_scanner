@@ -1,6 +1,7 @@
 import 'package:barcode_scanner/scan_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+
+import 'database_management.dart';
 
 class ImportWarehouse extends StatefulWidget {
   @override
@@ -8,6 +9,8 @@ class ImportWarehouse extends StatefulWidget {
 }
 
 class _ImportWarehouse extends State<ImportWarehouse> {
+  var history;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,8 +23,42 @@ class _ImportWarehouse extends State<ImportWarehouse> {
         ),
         title: Text("Depozitare"),
       ),
-      body: Center(
-        child: Text('Import'),
+      body: FutureBuilder(
+        future: ImportTransaction.queryWithBarcodes(),
+        builder: (context, snapshot) {
+          List<Widget> children = [];
+          if (snapshot.hasError) {
+            children = <Widget>[
+              Icon(
+                Icons.error_outline,
+                color: Colors.red,
+                size: 60,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Text('Error: ${snapshot.error}'),
+              )
+            ];
+          } else {
+            history = snapshot.data;
+          }
+          return (history == null)
+              ? Column(
+                  children: children,
+                )
+              : ListView.builder(
+                  itemCount: history.length,
+                  itemBuilder: (context, i) {
+                    var importDate = DateTime.parse(
+                        history[i][ImportTransaction.importDate]);
+                    return ListTile(
+                      title: Text(
+                          "${i + 1}. Barcode: ${history[i][Barcode.barcode]}\nQuantity: ${history[i][ImportTransaction.quantity]}\n"
+                          "Date: ${importDate.day}/${importDate.month}/${importDate.year} ${importDate.hour}:${importDate.minute}"),
+                    );
+                  },
+                );
+        },
       ),
       bottomNavigationBar: SizedBox(
         width: MediaQuery.of(context).size.width - 10,
@@ -34,21 +71,19 @@ class _ImportWarehouse extends State<ImportWarehouse> {
           label: Text("Depozitare"),
           icon: Icon(Icons.arrow_downward),
           onPressed: () async {
-            var result = await FlutterBarcodeScanner.scanBarcode(
-                "#ff4297", "Anulează", true, ScanMode.DEFAULT);
-            if (result == '-1') return;
             showDialog(
               context: context,
-              builder: (context) => ScanDialog(
-                  Text('Depozitare produs'),
-                  RaisedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: Icon(Icons.done),
-                    label: Text("Terminat"),
-                  ),
-                  result),
+              builder: (context) {
+                return ScanDialog(
+                    Text('Depozitare produs'),
+                    ImportTransaction.insert,
+                    (id, quantity) => <String, dynamic>{
+                          ImportTransaction.barcodeId: id,
+                          ImportTransaction.quantity: quantity,
+                          ImportTransaction.importDate:
+                              DateTime.now().toIso8601String(),
+                        });
+              },
               barrierDismissible: false,
             );
           },
