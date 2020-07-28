@@ -47,7 +47,7 @@ class App extends StatelessWidget {
         ),
         visualDensity: VisualDensity.comfortable,
         accentColorBrightness: Brightness.dark,
-        accentColor: Color(0xFFA84F6A),
+        accentColor: Color(0xFF6B3244),
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
@@ -65,7 +65,7 @@ class App extends StatelessWidget {
         }),
         visualDensity: VisualDensity.comfortable,
         accentColorBrightness: Brightness.light,
-        accentColor: Color(0xFF32446B),
+        accentColor: Color(0xFFB4969F),
       ),
     );
   }
