@@ -44,20 +44,20 @@ class _ExportWarehouse extends State<ExportWarehouse> {
           }
           return (history == null)
               ? Column(
-            children: children,
-          )
+                  children: children,
+                )
               : ListView.builder(
-            itemCount: history.length,
-            itemBuilder: (context, i) {
-              var exportDate = DateTime.parse(
-                  history[i][ExportTransaction.exportDate]);
-              return ListTile(
-                title: Text(
-                    "${i + 1}. Barcode: ${history[i][Barcode.barcode]}\nQuantity: ${history[i][ExportTransaction.quantity]}\n"
-                        "Date: ${exportDate.day}/${exportDate.month}/${exportDate.year} ${exportDate.hour}:${exportDate.minute}"),
-              );
-            },
-          );
+                  itemCount: history.length,
+                  itemBuilder: (context, i) {
+                    var exportDate = DateTime.parse(
+                        history[i][ExportTransaction.exportDate]);
+                    return ListTile(
+                      title: Text(
+                          "${i + 1}. Barcode: ${history[i][Barcode.barcode]}\nQuantity: ${history[i][ExportTransaction.quantity]}\n"
+                          "Date: ${exportDate.day}/${exportDate.month}/${exportDate.year} ${exportDate.hour}:${exportDate.minute}"),
+                    );
+                  },
+                );
         },
       ),
       bottomNavigationBar: SizedBox(
@@ -75,14 +75,16 @@ class _ExportWarehouse extends State<ExportWarehouse> {
               context: context,
               builder: (context) {
                 return ScanDialog(
-                    Text('Extragere produs'),
-                    ExportTransaction.insert,
-                        (id, quantity) => <String, dynamic>{
-                      ExportTransaction.barcodeId: id,
-                      ExportTransaction.quantity: quantity,
-                      ExportTransaction.exportDate:
-                      DateTime.now().toIso8601String(),
-                    });
+                  Text('Extragere produs'),
+                  ExportTransaction.insert,
+                  (id, quantity) => <String, dynamic>{
+                    ExportTransaction.barcodeId: id,
+                    ExportTransaction.quantity: quantity,
+                    ExportTransaction.exportDate:
+                        DateTime.now().toIso8601String(),
+                  },
+                  availableStockFunction: ExportTransaction.queryAvailableStock,
+                );
               },
               barrierDismissible: false,
             );

@@ -6,13 +6,15 @@ class ScanDialog extends StatefulWidget {
   final title;
   final transactionInsert;
   final mapperFunction;
+  final availableStockFunction;
 
   static _scan() async {
     return FlutterBarcodeScanner.scanBarcode(
         "#ff4297", "Anulează", true, ScanMode.DEFAULT);
   }
 
-  ScanDialog(this.title, this.transactionInsert, this.mapperFunction);
+  ScanDialog(this.title, this.transactionInsert, this.mapperFunction,
+      {this.availableStockFunction});
 
   @override
   State<StatefulWidget> createState() => _ScanDialog();
@@ -27,13 +29,15 @@ class _ScanDialog extends State<ScanDialog> {
 
   bool emptyQuantity = true;
   var emptyQuantityPressed = false;
+  bool exceedQuantity = true;
+  var exceedQuantityPressed = false;
 
   var unscannedPressed = false;
 
   @override
   Widget build(BuildContext context) {
     if (unscanned) scanController.text = "Apasă aici pentru a scana barcod";
-    var actionButton = RaisedButton.icon(
+    var finishButton = RaisedButton.icon(
       onPressed: () async {
         if (unscanned) {
           setState(() {
@@ -44,7 +48,7 @@ class _ScanDialog extends State<ScanDialog> {
         var number = int.tryParse(quantityController.text, radix: 10);
         if (emptyQuantity) {
           setState(() {
-            emptyQuantity = quantityController.text == "" || number < 0;
+            emptyQuantity = quantityController.text == "" || number <= 0;
             emptyQuantityPressed = emptyQuantity;
           });
           return;
@@ -54,6 +58,20 @@ class _ScanDialog extends State<ScanDialog> {
           where: '${Barcode.barcode} = \"${scanController.text}\"',
         );
         barcodeID = barcodeID[0][Barcode.id];
+        var maxStock;
+        if (widget.availableStockFunction != null) {
+          maxStock = await widget.availableStockFunction(barcodeID);
+        } else {
+          maxStock = double.maxFinite;
+        }
+        print(maxStock);
+        if (exceedQuantity) {
+          setState(() {
+            exceedQuantity = number > maxStock;
+            exceedQuantityPressed = exceedQuantity;
+          });
+          return;
+        }
         widget.transactionInsert(
             widget.mapperFunction(barcodeID, quantityController.text));
         Navigator.pop(context);
@@ -116,8 +134,11 @@ class _ScanDialog extends State<ScanDialog> {
             decoration: InputDecoration(
               labelText: "Cantitate: ",
               hintText: "Cantitate de produs ... ",
-              errorText:
-                  (emptyQuantityPressed) ? "Completați cantitatea" : null,
+              errorText: (emptyQuantityPressed)
+                  ? "Completați cantitatea"
+                  : (exceedQuantityPressed)
+                      ? "Nu există așa cantitate în stock"
+                      : null,
             ),
             controller: quantityController,
             focusNode: quantityFocusNode,
@@ -143,7 +164,7 @@ class _ScanDialog extends State<ScanDialog> {
           },
           icon: Icon(Icons.cancel),
         ),
-        (unregistered) ? registerButton : actionButton
+        (unregistered) ? registerButton : finishButton
       ],
     );
   }

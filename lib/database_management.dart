@@ -226,6 +226,22 @@ class ExportTransaction {
         'ON b.${Barcode.id} = et.${ExportTransaction.barcodeId}');
   }
 
+  static queryAvailableStock(id) async {
+    Database db = await AppDatabase.instance.database;
+    var importedStock = await db.rawQuery(
+        'SELECT SUM(${ImportTransaction.quantity}) AS import_stock FROM '
+        '${ImportTransaction.table} WHERE ${ImportTransaction.id}=$id');
+    var exportedStock = await db.rawQuery(
+        'SELECT SUM(${ExportTransaction.quantity}) AS export_stock FROM '
+        '${ExportTransaction.table} WHERE ${ExportTransaction.id}=$id');
+    var imported = importedStock[0]['import_stock'];
+    var exported = exportedStock[0]['export_stock'];
+    if (imported == null) imported = 0;
+    if (exported == null) exported = 0;
+    int available = imported - exported;
+    return available;
+  }
+
   static insert(Map<String, dynamic> row) async {
     var database = await AppDatabase.instance.database;
     return database.insert(table, row);
