@@ -7,6 +7,7 @@ class ScanDialog extends StatefulWidget {
   final transactionInsert;
   final mapperFunction;
   final availableStockFunction;
+  final outFlag;
 
   static _scan() async {
     return FlutterBarcodeScanner.scanBarcode(
@@ -14,7 +15,7 @@ class ScanDialog extends StatefulWidget {
   }
 
   ScanDialog(this.title, this.transactionInsert, this.mapperFunction,
-      {this.availableStockFunction});
+      {this.availableStockFunction, this.outFlag = false});
 
   @override
   State<StatefulWidget> createState() => _ScanDialog();
@@ -53,11 +54,11 @@ class _ScanDialog extends State<ScanDialog> {
           });
           return;
         }
-        var barcodeID = await Barcode.query(
-          columns: [Barcode.id],
-          where: '${Barcode.barcode} = \"${scanController.text}\"',
+        var barcodeID = await Product.query(
+          columns: [Product.id],
+          where: '${Product.barcode} = \"${scanController.text}\"',
         );
-        barcodeID = barcodeID[0][Barcode.id];
+        barcodeID = barcodeID[0][Product.id];
         var maxStock;
         if (widget.availableStockFunction != null) {
           maxStock = await widget.availableStockFunction(barcodeID);
@@ -73,7 +74,9 @@ class _ScanDialog extends State<ScanDialog> {
           return;
         }
         widget.transactionInsert(
-            widget.mapperFunction(barcodeID, quantityController.text));
+          widget.mapperFunction(barcodeID,
+              int.parse(quantityController.text) * ((widget.outFlag) ? -1 : 1)),
+        );
         Navigator.pop(context);
       },
       icon: Icon(Icons.done),
@@ -82,10 +85,10 @@ class _ScanDialog extends State<ScanDialog> {
     var registerButton = RaisedButton.icon(
       onPressed: () async {
         setState(() {
-          Barcode.insert(
+          Product.insert(
             {
-              Barcode.barcode: scanController.text,
-              Barcode.startDate: DateTime.now().toIso8601String()
+              Product.barcode: scanController.text,
+              Product.registrationDate: DateTime.now().toIso8601String()
             },
           );
           unregistered = false;
@@ -119,8 +122,8 @@ class _ScanDialog extends State<ScanDialog> {
                 });
                 return;
               }
-              var queryResult = await Barcode.query(
-                  where: '${Barcode.barcode} = \"$result\"');
+              var queryResult = await Product.query(
+                  where: '${Product.barcode} = \"$result\"');
               var _unregistered = queryResult.length == 0;
               setState(() {
                 scanController.text = result;

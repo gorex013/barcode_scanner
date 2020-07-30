@@ -24,7 +24,7 @@ class _ImportWarehouse extends State<ImportWarehouse> {
         title: Text("Depozitare"),
       ),
       body: FutureBuilder(
-        future: ImportTransaction.queryWithBarcodes(),
+        future: Transaction.queryImport(),
         builder: (context, snapshot) {
           List<Widget> children = [];
           if (snapshot.hasError) {
@@ -50,10 +50,10 @@ class _ImportWarehouse extends State<ImportWarehouse> {
                   itemCount: history.length,
                   itemBuilder: (context, i) {
                     var importDate = DateTime.parse(
-                        history[i][ImportTransaction.importDate]);
+                        history[i][Transaction.transactionDate]);
                     return ListTile(
                       title: Text(
-                          "${i + 1}. Barcode: ${history[i][Barcode.barcode]}\nQuantity: ${history[i][ImportTransaction.quantity]}\n"
+                          "${i + 1}. Barcode: ${history[i][Product.barcode]}\nQuantity: ${history[i][Transaction.quantity]}\n"
                           "Date: ${importDate.day}/${importDate.month}/${importDate.year} ${importDate.hour}:${importDate.minute}"),
                     );
                   },
@@ -76,11 +76,11 @@ class _ImportWarehouse extends State<ImportWarehouse> {
               builder: (context) {
                 return ScanDialog(
                     Text('Depozitare produs'),
-                    ImportTransaction.insert,
+                    Transaction.insert,
                     (id, quantity) => <String, dynamic>{
-                          ImportTransaction.barcodeId: id,
-                          ImportTransaction.quantity: quantity,
-                          ImportTransaction.importDate:
+                          Transaction.productId: id,
+                          Transaction.quantity: quantity,
+                          Transaction.transactionDate:
                               DateTime.now().toIso8601String(),
                         });
               },

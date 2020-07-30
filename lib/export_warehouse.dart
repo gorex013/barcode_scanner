@@ -24,7 +24,7 @@ class _ExportWarehouse extends State<ExportWarehouse> {
         title: Text("Extragere"),
       ),
       body: FutureBuilder(
-        future: ExportTransaction.queryWithBarcodes(),
+        future: Transaction.queryExport(),
         builder: (context, snapshot) {
           List<Widget> children = [];
           if (snapshot.hasError) {
@@ -50,10 +50,10 @@ class _ExportWarehouse extends State<ExportWarehouse> {
                   itemCount: history.length,
                   itemBuilder: (context, i) {
                     var exportDate = DateTime.parse(
-                        history[i][ExportTransaction.exportDate]);
+                        history[i][Transaction.transactionDate]);
                     return ListTile(
                       title: Text(
-                          "${i + 1}. Barcode: ${history[i][Barcode.barcode]}\nQuantity: ${history[i][ExportTransaction.quantity]}\n"
+                          "${i + 1}. Barcode: ${history[i][Product.barcode]}\nQuantity: ${history[i][Transaction.quantity]}\n"
                           "Date: ${exportDate.day}/${exportDate.month}/${exportDate.year} ${exportDate.hour}:${exportDate.minute}"),
                     );
                   },
@@ -76,14 +76,14 @@ class _ExportWarehouse extends State<ExportWarehouse> {
               builder: (context) {
                 return ScanDialog(
                   Text('Extragere produs'),
-                  ExportTransaction.insert,
+                  Transaction.insert,
                   (id, quantity) => <String, dynamic>{
-                    ExportTransaction.barcodeId: id,
-                    ExportTransaction.quantity: quantity,
-                    ExportTransaction.exportDate:
+                    Transaction.productId: id,
+                    Transaction.quantity: quantity,
+                    Transaction.transactionDate:
                         DateTime.now().toIso8601String(),
                   },
-                  availableStockFunction: ExportTransaction.queryAvailableStock,
+                  availableStockFunction: Transaction.queryStock,
                 );
               },
               barrierDismissible: false,
