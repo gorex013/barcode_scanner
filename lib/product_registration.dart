@@ -77,8 +77,8 @@ class _RegisterProduct extends State<RegisterProduct> {
                       onTap: () {
                         showDialog(
                           context: context,
-                          builder: (context) => AlertDialog(
-                            content: Text(
+                          builder: (context) => Dialog(
+                            child: Text(
                               "Barcode: ${history[i]['barcode']}\n"
                               "Date: ${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}",
                             ),
@@ -96,41 +96,94 @@ class _RegisterProduct extends State<RegisterProduct> {
           onPressed: () {
             showDialog(
               context: context,
-              builder: (context) => AlertDialog(
+              builder: (context) => SimpleDialog(
                 title: Text("Înregistrare"),
-                content: Column(
-                  children: <Widget>[
-                    TextField(
-                      decoration: InputDecoration(
-                        labelText: "Denumire: ",
-                        hintText: "Denumire produs ... ",
-                        errorText: (emptyNamePressed)
-                            ? "Denumire produs obligatorie"
-                            : null,
+                children: <Widget>[
+                  Column(
+                    children: <Widget>[
+                      TextField(
+                        decoration: InputDecoration(
+                          labelText: "Denumire: ",
+                          hintText: "Denumire produs ... ",
+                          errorText: (emptyNamePressed)
+                              ? "Denumire produs obligatorie"
+                              : null,
+                          contentPadding: EdgeInsets.all(10),
+                        ),
+                        controller: nameController,
+                        focusNode: nameFocusNode,
+                        keyboardType: TextInputType.text,
+                        textInputAction: TextInputAction.done,
+                        onSubmitted: (text) {
+                          nameFocusNode.unfocus();
+                        },
+                        onTap: () {
+                          FocusScope.of(context).requestFocus(nameFocusNode);
+                        },
+                        onEditingComplete: () {
+                          nameFocusNode.unfocus();
+                        },
                       ),
-                      controller: nameController,
-                      focusNode: nameFocusNode,
-                      keyboardType: TextInputType.text,
-                      textInputAction: TextInputAction.done,
-                      onSubmitted: (text) {
-                        nameFocusNode.unfocus();
-                      },
-                      onTap: () {
-                        FocusScope.of(context).requestFocus(nameFocusNode);
-                      },
-                      onEditingComplete: () {
-                        nameFocusNode.unfocus();
-                      },
-                    ),
-                  ],
-                ),
-                actions: <Widget>[
-                  RaisedButton.icon(
-                    label: Text("Anulare"),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: Icon(Icons.cancel),
+                    ],
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                  ),
+                  Row(
+                    children: <Widget>[
+                      RaisedButton.icon(
+                        label: Text("Anulare"),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        icon: Icon(Icons.cancel),
+                      ),
+                      RaisedButton.icon(
+                        onPressed: () async {
+//                          if (unscanned) {
+//                            setState(() {
+//                              unscannedPressed = true;
+//                            });
+//                            return;
+//                          }
+//                          var number = int.tryParse(quantityController.text, radix: 10);
+//                          if (emptyQuantity) {
+//                            setState(() {
+//                              emptyQuantity = quantityController.text == "" || number <= 0;
+//                              emptyQuantityPressed = emptyQuantity;
+//                            });
+//                            return;
+//                          }
+//                          var barcodeID = await Product.query(
+//                            columns: [Product.id],
+//                            where: '${Product.barcode} = \"${scanController.text}\"',
+//                          );
+//                          barcodeID = barcodeID[0][Product.id];
+//                          var maxStock;
+//                          if (widget.availableStockFunction != null) {
+//                            maxStock = await widget.availableStockFunction(barcodeID);
+//                          } else {
+//                            maxStock = double.maxFinite;
+//                          }
+//                          print(maxStock);
+//                          if (exceedQuantity) {
+//                            setState(() {
+//                              exceedQuantity = number > maxStock;
+//                              exceedQuantityPressed = exceedQuantity;
+//                            });
+//                            return;
+//                          }
+//                          widget.transactionInsert(
+//                            widget.mapperFunction(barcodeID,
+//                                int.parse(quantityController.text) * ((widget.outFlag) ? -1 : 1)),
+//                          );
+                          Navigator.pop(context);
+                        },
+                        icon: Icon(Icons.done),
+                        label: Text("Terminat"),
+                      )
+                    ],
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   ),
                 ],
               ),
