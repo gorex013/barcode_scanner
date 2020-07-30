@@ -29,9 +29,8 @@ class AppDatabase {
   }
 
   Future _onCreate(Database db, int version) async {
-    await Barcode.onCreate(db);
-    await ImportTransaction.onCreate(db);
-    await ExportTransaction.onCreate(db);
+    await Product.onCreate(db);
+    await Transaction.onCreate(db);
   }
 
   Future<bool> deleteDb() async {
@@ -54,18 +53,20 @@ class AppDatabase {
   }
 }
 
-class Barcode {
-  static final table = 'barcode';
+class Product {
+  static final table = 'product';
   static final id = 'id';
   static final barcode = 'barcode';
-  static final startDate = 'start_date';
+  static final name = 'name';
+  static final registrationDate = 'registration_date';
 
   static onCreate(db) async {
     await db.execute('''
           CREATE TABLE $table (
             $id INTEGER PRIMARY KEY AUTOINCREMENT,
             $barcode TEXT NOT NULL UNIQUE,
-            $startDate DATETIME NOT NULL
+            $name TEXT NOT NULL,
+            $registrationDate DATETIME NOT NULL
           );
           ''');
   }
@@ -106,22 +107,22 @@ class Barcode {
   }
 }
 
-class ImportTransaction {
-  static final table = 'import_transaction';
+class Transaction {
+  static final table = 'transaction';
 
   static final id = 'id';
-  static final barcodeId = 'barcode_id';
+  static final productId = 'product_id';
   static final quantity = 'quantity';
-  static final importDate = 'import_date';
+  static final transactionDate = 'transaction_date';
 
   static onCreate(db) async {
     await db.execute('''
           CREATE TABLE $table (
             $id INTEGER PRIMARY KEY AUTOINCREMENT,
-            $barcodeId TEXT NOT NULL,
+            $productId INTEGER NOT NULL,
             $quantity INTEGER NOT NULL,
-            $importDate DATETIME NOT NULL,
-            FOREIGN KEY ($barcodeId) REFERENCES ${Barcode.table}(${Barcode.id})
+            $transactionDate DATETIME NOT NULL,
+            FOREIGN KEY ($productId) REFERENCES ${Product.table}(${Product.id})
           );
           ''');
   }
@@ -150,96 +151,14 @@ class ImportTransaction {
     );
   }
 
-  static queryWithBarcodes() async {
+  static queryImport() async {
     Database db = await AppDatabase.instance.database;
     return db.rawQuery('SELECT '
-        'b.${Barcode.barcode} AS ${Barcode.barcode}, '
-        'it.${ImportTransaction.quantity} AS ${ImportTransaction.quantity}, '
-        'it.${ImportTransaction.importDate} AS ${ImportTransaction.importDate} '
-        'FROM ${Barcode.table} b JOIN ${ImportTransaction.table} it '
-        'ON b.${Barcode.id} = it.${ImportTransaction.barcodeId}');
-  }
-
-  static insert(Map<String, dynamic> row) async {
-    var database = await AppDatabase.instance.database;
-    return database.insert(table, row);
-  }
-
-  static update(Map<String, dynamic> row) async {
-    Database db = await AppDatabase.instance.database;
-    int anId = row[id];
-    return await db.update(table, row, where: '$id = ?', whereArgs: [anId]);
-  }
-}
-
-class ExportTransaction {
-  static final table = 'export_transaction';
-
-  static final id = 'id';
-  static final barcodeId = 'barcode_id';
-  static final quantity = 'quantity';
-  static final exportDate = 'export_date';
-
-  static onCreate(db) async {
-    await db.execute('''
-          CREATE TABLE $table (
-            $id INTEGER PRIMARY KEY AUTOINCREMENT,
-            $barcodeId TEXT NOT NULL,
-            $quantity INTEGER NOT NULL,
-            $exportDate DATETIME NOT NULL,
-            FOREIGN KEY ($barcodeId) REFERENCES ${Barcode.table}(${Barcode.id})
-          );
-          ''');
-  }
-
-  static query(
-      {bool distinct,
-      List<String> columns,
-      String where,
-      List<dynamic> whereArgs,
-      String groupBy,
-      String having,
-      String orderBy,
-      int limit,
-      int offset}) async {
-    Database db = await AppDatabase.instance.database;
-    return db.query(
-      table,
-      distinct: distinct,
-      columns: columns,
-      where: where,
-      groupBy: groupBy,
-      having: having,
-      orderBy: orderBy,
-      limit: limit,
-      offset: offset,
-    );
-  }
-
-  static queryWithBarcodes() async {
-    Database db = await AppDatabase.instance.database;
-    return db.rawQuery('SELECT '
-        'b.${Barcode.barcode} AS ${Barcode.barcode}, '
-        'et.${ExportTransaction.quantity} AS ${ExportTransaction.quantity}, '
-        'et.${ExportTransaction.exportDate} AS ${ExportTransaction.exportDate} '
-        'FROM ${Barcode.table} b JOIN ${ExportTransaction.table} et '
-        'ON b.${Barcode.id} = et.${ExportTransaction.barcodeId}');
-  }
-
-  static queryAvailableStock(id) async {
-    Database db = await AppDatabase.instance.database;
-    var importedStock = await db.rawQuery(
-        'SELECT SUM(${ImportTransaction.quantity}) AS import_stock FROM '
-        '${ImportTransaction.table} WHERE ${ImportTransaction.id}=$id');
-    var exportedStock = await db.rawQuery(
-        'SELECT SUM(${ExportTransaction.quantity}) AS export_stock FROM '
-        '${ExportTransaction.table} WHERE ${ExportTransaction.id}=$id');
-    var imported = importedStock[0]['import_stock'];
-    var exported = exportedStock[0]['export_stock'];
-    if (imported == null) imported = 0;
-    if (exported == null) exported = 0;
-    int available = imported - exported;
-    return available;
+        'b.${Product.barcode} AS ${Product.barcode}, '
+        't.${Transaction.quantity} AS ${Transaction.quantity}, '
+        't.${Transaction.transactionDate} AS ${Transaction.transactionDate} '
+        'FROM ${Product.table} b JOIN ${Transaction.table} t '
+        'ON b.${Product.id} = t.${Transaction.productId} WHERE t.${Transaction.quantity} > 0');
   }
 
   static insert(Map<String, dynamic> row) async {
@@ -253,8 +172,24 @@ class ExportTransaction {
     return await db.update(table, row, where: '$id = ?', whereArgs: [anId]);
   }
 
-  static delete(int anId) async {
+  static queryExport() async {
     Database db = await AppDatabase.instance.database;
-    return await db.delete(table, where: '$id = ?', whereArgs: [anId]);
+    return db.rawQuery('SELECT '
+        'b.${Product.barcode} AS ${Product.barcode}, '
+        't.${Transaction.quantity} AS ${Transaction.quantity}, '
+        't.${Transaction.transactionDate} AS ${Transaction.transactionDate} '
+        'FROM ${Product.table} b JOIN ${Transaction.table} t '
+        'ON b.${Product.id} = t.${Transaction.productId} WHERE t.${Transaction.quantity} < 0');
+  }
+
+  static queryStock({int id, String barcode}) async {
+    Database db = await AppDatabase.instance.database;
+    if (id == null && barcode != null){
+      id = Sqflite.firstIntValue(await db.query(Product.table, columns:[Product.id],where: '${Product.barcode} = $barcode'));
+    } else if(id == null && barcode == null || id != null && barcode != null){
+      throw ArgumentError("Either `id` or `barcode` should be given!");
+    } else
+    return db.rawQuery('SELECT '
+        'SUM(${Transaction.quantity}) AS stock FROM ${Transaction.table}');
   }
 }
