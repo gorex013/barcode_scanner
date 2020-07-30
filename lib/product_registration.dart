@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 import 'database_management.dart';
 
@@ -11,30 +10,27 @@ class RegisterProduct extends StatefulWidget {
 
 class _RegisterProduct extends State<RegisterProduct> {
   var history;
+  var nameController = TextEditingController();
+  var emptyNamePressed = false;
 
-  void _scan() async {
-    var _result = await FlutterBarcodeScanner.scanBarcode(
-        "#ff4297", "Cancel", true, ScanMode.DEFAULT);
-    var queryResult = await Barcode.query(
-      where: '${Barcode.barcode} = \"$_result\"',
-    );
-    bool exists = queryResult.length != 0;
-    if (exists) {
-      showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-                content: Text("Produsul $_result există deja în baza de date."),
-              ));
-      return;
-    }
-    if (_result != '-1')
-        Barcode.insert(
-          {
-            Barcode.barcode: '\"'+_result+'\"',
-            Barcode.startDate: DateTime.now().toIso8601String()
-          },
-        );
-  }
+  var nameFocusNode = FocusNode();
+
+//  void _scan() async {
+//    var _result = await FlutterBarcodeScanner.scanBarcode(
+//        "#ff4297", "Cancel", true, ScanMode.DEFAULT);
+//    var queryResult = await Product.query(
+//      where: '${Product.barcode} = \"$_result\"',
+//    );
+//    bool exists = queryResult.length != 0;
+//    if (exists) {
+//      showDialog(
+//          context: context,
+//          builder: (context) => AlertDialog(
+//                content: Text("Produsul $_result există deja în baza de date."),
+//              ));
+//      return;
+//    }
+//  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +45,7 @@ class _RegisterProduct extends State<RegisterProduct> {
         title: Text("Înregistrare produse"),
       ),
       body: FutureBuilder(
-        future: Barcode.query(),
+        future: Product.query(),
         builder: (context, snapshot) {
           List<Widget> children = [];
           if (snapshot.hasError) {
@@ -74,11 +70,21 @@ class _RegisterProduct extends State<RegisterProduct> {
               : ListView.builder(
                   itemCount: history.length,
                   itemBuilder: (context, i) {
-                    var dateTime = DateTime.parse(history[i]['start_date']);
+                    var dateTime =
+                        DateTime.parse(history[i][Product.registrationDate]);
                     return ListTile(
-                      title: Text(
-                          "${i + 1}. Barcode: ${history[i]['barcode']}\n"
-                          "Date: ${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}"),
+                      title: Text("${i + 1}.Name:${history[i][Product.name]}"),
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            content: Text(
+                              "Barcode: ${history[i]['barcode']}\n"
+                              "Date: ${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}",
+                            ),
+                          ),
+                        );
+                      },
                     );
                   },
                 );
@@ -88,11 +94,52 @@ class _RegisterProduct extends State<RegisterProduct> {
         width: MediaQuery.of(context).size.width - 20,
         child: RaisedButton.icon(
           onPressed: () {
-            _scan();
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text("Înregistrare"),
+                content: Column(
+                  children: <Widget>[
+                    TextField(
+                      decoration: InputDecoration(
+                        labelText: "Denumire: ",
+                        hintText: "Denumire produs ... ",
+                        errorText: (emptyNamePressed)
+                            ? "Denumire produs obligatorie"
+                            : null,
+                      ),
+                      controller: nameController,
+                      focusNode: nameFocusNode,
+                      keyboardType: TextInputType.text,
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: (text) {
+                        nameFocusNode.unfocus();
+                      },
+                      onTap: () {
+                        FocusScope.of(context).requestFocus(nameFocusNode);
+                      },
+                      onEditingComplete: () {
+                        nameFocusNode.unfocus();
+                      },
+                    ),
+                  ],
+                ),
+                actions: <Widget>[
+                  RaisedButton.icon(
+                    label: Text("Anulare"),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    icon: Icon(Icons.cancel),
+                  ),
+                ],
+              ),
+              barrierDismissible: false,
+            );
           },
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          label: Text("Scanare"),
+          label: Text("Înregistrare"),
           icon: Icon(Icons.settings_overscan),
         ),
       ),
