@@ -25,27 +25,21 @@ class _ScanDialog extends State<ScanDialog> {
   var scanController = TextEditingController();
   var quantityController = TextEditingController();
   var quantityFocusNode = FocusNode();
-  var unregistered = false;
+  var registered = true;
 
-  bool emptyQuantity = true;
-  var emptyQuantityPressed = false;
-  bool exceedQuantity = true;
-  var exceedQuantityPressed = false;
+  var emptyQuantity;
+  var exceedQuantity;
+  var negativeQuantity;
 
-  var unscannedPressed = false;
+  var scanned;
 
   @override
   Widget build(BuildContext context) {
     var finishButton = RaisedButton.icon(
       onPressed: () async {
-        if (scanController.text.length == 0) {
-          setState(() {});
-        }
-        var number = int.tryParse(quantityController.text, radix: 10);
-        if (emptyQuantity) {
+        if (scanController.text.isEmpty) {
           setState(() {
-            emptyQuantity = quantityController.text == "" || number <= 0;
-            emptyQuantityPressed = emptyQuantity;
+            scanned = false;
           });
           return;
         }
@@ -53,20 +47,46 @@ class _ScanDialog extends State<ScanDialog> {
           columns: [Product.id],
           where: '${Product.barcode} = \"${scanController.text}\"',
         );
-        barcodeID = barcodeID[0][Product.id];
-        var maxStock;
-        if (widget.availableStockFunction != null) {
-          maxStock = await widget.availableStockFunction(id: barcodeID);
-          print(maxStock);
-          maxStock = maxStock[0]['stock'];
-        }
-        if (maxStock == null) maxStock = 0;
-        if (exceedQuantity) {
+        if (barcodeID == null) {
           setState(() {
-            exceedQuantity = number > maxStock;
-            exceedQuantityPressed = exceedQuantity;
+            scanned = true;
+            registered = false;
           });
           return;
+        }
+        barcodeID = barcodeID[0][Product.id];
+        if (quantityController.text.isEmpty) {
+          setState(() {
+            scanned = true;
+            registered = true;
+            emptyQuantity = true;
+          });
+          return;
+        }
+        var number = int.tryParse(quantityController.text, radix: 10);
+        if (number <= 0) {
+          setState(() {
+            emptyQuantity = false;
+            negativeQuantity = true;
+            exceedQuantity = false;
+          });
+          return;
+        }
+        if (widget.outFlag) {
+          var maxStock;
+          if (widget.availableStockFunction != null) {
+            maxStock = await widget.availableStockFunction(id: barcodeID);
+            maxStock = maxStock[0]['stock'];
+          }
+          if (maxStock == null) maxStock = 0;
+          if (number > maxStock) {
+            setState(() {
+              emptyQuantity = false;
+              exceedQuantity = true;
+              negativeQuantity = false;
+            });
+            return;
+          }
         }
         widget.transactionInsert(
           widget.mapperFunction(barcodeID,
@@ -83,7 +103,7 @@ class _ScanDialog extends State<ScanDialog> {
             context, '/fast-register-product',
             arguments: scanController.text);
         setState(() {
-          unregistered = _unregistred;
+          registered = _unregistred;
         });
       },
       icon: Icon(Icons.add),
@@ -99,9 +119,11 @@ class _ScanDialog extends State<ScanDialog> {
               TextField(
                 decoration: InputDecoration(
                     hintText: "Apasă pentru scanare",
-                    errorText: (unscannedPressed)
-                        ? "Scanați barcod"
-                        : (unregistered) ? "Înregistrat produsul" : null),
+                    errorText: (scanned == null)
+                        ? null
+                        : (!scanned)
+                            ? "Scanați barcod"
+                            : (!registered) ? "Înregistrați produsul" : null),
                 controller: scanController,
                 enableInteractiveSelection: false,
                 showCursor: false,
@@ -109,18 +131,19 @@ class _ScanDialog extends State<ScanDialog> {
                   var result = await ScanDialog._scan();
                   if (result == '-1') {
                     setState(() {
+                      scanned = false;
                       scanController.text = "";
-                      unscannedPressed = true;
                     });
                     return;
                   }
                   var queryResult = await Product.query(
                       where: '${Product.barcode} = \"$result\"');
-                  var _unregistered = queryResult.length == 0;
+                  print(queryResult);
+                  var _registered = queryResult.length != 0;
                   setState(() {
                     scanController.text = result;
-                    unregistered = _unregistered;
-                    unscannedPressed = false;
+                    scanned = true;
+                    registered = _registered;
                   });
                   quantityFocusNode.requestFocus();
                 },
@@ -129,11 +152,15 @@ class _ScanDialog extends State<ScanDialog> {
                 decoration: InputDecoration(
                   labelText: "Cantitate: ",
                   hintText: "Cantitate de produs ... ",
-                  errorText: (emptyQuantityPressed)
-                      ? "Completați cantitatea"
-                      : (exceedQuantityPressed)
-                          ? "Nu există așa cantitate în stock"
-                          : null,
+                  errorText: (emptyQuantity == null)
+                      ? null
+                      : (emptyQuantity)
+                          ? "Completați cantitatea"
+                          : (exceedQuantity)
+                              ? "Cantitate excesivă"
+                              : (negativeQuantity)
+                                  ? "Valoarea cantității nu poate fi negativă sau zero"
+                                  : null,
                 ),
                 controller: quantityController,
                 focusNode: quantityFocusNode,
@@ -161,7 +188,7 @@ class _ScanDialog extends State<ScanDialog> {
               },
               icon: Icon(Icons.cancel),
             ),
-            (unregistered) ? registerButton : finishButton
+            (!registered) ? registerButton : finishButton
           ],
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
