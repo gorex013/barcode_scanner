@@ -35,13 +35,20 @@ class ProductList extends StatelessWidget {
                       DateTime.parse(history[i][Product.registrationDate]);
                   return ListTile(
                     title: Text("${i + 1}. ${history[i][Product.name]}"),
-                    onTap: () {
+                    onTap: () async {
+                      var productId = history[i][Product.id];
+                      var stock = await Transaction.queryStock(id: productId);
+                      if (stock == null || stock[0] == null || stock[0]['stock'] == null) stock = 0;
+                      else {
+                        stock=stock[0]['stock'];
+                      }
                       showDialog(
                         context: context,
                         builder: (context) => AlertDialog(
                           content: Text(
                             "Barcode: ${history[i]['barcode']}\n"
-                            "Data înregistrării: ${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}",
+                            "Data înregistrării: ${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}\n"
+                                "Stoc: $stock unități",
                           ),
                         ),
                       );

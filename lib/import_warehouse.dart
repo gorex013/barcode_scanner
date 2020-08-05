@@ -49,8 +49,8 @@ class _ImportWarehouse extends State<ImportWarehouse> {
               : ListView.builder(
                   itemCount: history.length,
                   itemBuilder: (context, i) {
-                    var importDate = DateTime.parse(
-                        history[i][Transaction.transactionDate]);
+                    var importDate =
+                        DateTime.parse(history[i][Transaction.transactionDate]);
                     return ListTile(
                       title: Text(
                           "${i + 1}. Barcode: ${history[i][Product.barcode]}\nQuantity: ${history[i][Transaction.quantity]}\n"
@@ -75,14 +75,15 @@ class _ImportWarehouse extends State<ImportWarehouse> {
               context: context,
               builder: (context) {
                 return ScanDialog(
-                    Text('Depozitare produs'),
-                    Transaction.insert,
-                    (id, quantity) => <String, dynamic>{
-                          Transaction.productId: id,
-                          Transaction.quantity: quantity,
-                          Transaction.transactionDate:
-                              DateTime.now().toIso8601String(),
-                        });
+                  Text('Depozitare produs'),
+                  Transaction.insert,
+                  (id, quantity) => <String, dynamic>{
+                    Transaction.productId: id,
+                    Transaction.quantity: quantity,
+                    Transaction.transactionDate:
+                        DateTime.now().toIso8601String(),
+                  },
+                );
               },
               barrierDismissible: false,
             );

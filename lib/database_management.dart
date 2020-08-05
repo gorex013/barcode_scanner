@@ -176,7 +176,7 @@ class Transaction {
     Database db = await AppDatabase.instance.database;
     return db.rawQuery('SELECT '
         'b.${Product.barcode} AS ${Product.barcode}, '
-        't.${Transaction.quantity} AS ${Transaction.quantity}, '
+        'ABS(t.${Transaction.quantity}) AS ${Transaction.quantity}, '
         't.${Transaction.transactionDate} AS ${Transaction.transactionDate} '
         'FROM ${Product.table} b JOIN ${Transaction.table} t '
         'ON b.${Product.id} = t.${Transaction.productId} WHERE t.${Transaction.quantity} < 0');
@@ -190,6 +190,6 @@ class Transaction {
       throw ArgumentError("Either `id` or `barcode` should be given!");
     } else
     return db.rawQuery('SELECT '
-        'SUM(${Transaction.quantity}) AS stock FROM ${Transaction.table}');
+        'SUM(${Transaction.quantity}) AS stock FROM ${Transaction.table} WHERE ${Transaction.productId}=$id');
   }
 }

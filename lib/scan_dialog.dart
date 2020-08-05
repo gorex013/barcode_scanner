@@ -26,7 +26,6 @@ class _ScanDialog extends State<ScanDialog> {
   var quantityController = TextEditingController();
   var quantityFocusNode = FocusNode();
   var unregistered = false;
-  var unscanned = true;
 
   bool emptyQuantity = true;
   var emptyQuantityPressed = false;
@@ -37,14 +36,10 @@ class _ScanDialog extends State<ScanDialog> {
 
   @override
   Widget build(BuildContext context) {
-    if (unscanned) scanController.text = "Apasă pentru scanare";
     var finishButton = RaisedButton.icon(
       onPressed: () async {
-        if (unscanned) {
-          setState(() {
-            unscannedPressed = true;
-          });
-          return;
+        if (scanController.text.length == 0) {
+          setState(() {});
         }
         var number = int.tryParse(quantityController.text, radix: 10);
         if (emptyQuantity) {
@@ -61,10 +56,11 @@ class _ScanDialog extends State<ScanDialog> {
         barcodeID = barcodeID[0][Product.id];
         var maxStock;
         if (widget.availableStockFunction != null) {
-          maxStock = await widget.availableStockFunction(barcodeID);
-        } else {
-          maxStock = double.maxFinite;
+          maxStock = await widget.availableStockFunction(id: barcodeID);
+          print(maxStock);
+          maxStock = maxStock[0]['stock'];
         }
+        if (maxStock == null) maxStock = 0;
         if (exceedQuantity) {
           setState(() {
             exceedQuantity = number > maxStock;
@@ -82,8 +78,9 @@ class _ScanDialog extends State<ScanDialog> {
       label: Text("Terminat"),
     );
     var registerButton = RaisedButton.icon(
-      onPressed: () async{
-        var _unregistred = await Navigator.pushNamed(context, '/fast-register-product',
+      onPressed: () async {
+        var _unregistred = await Navigator.pushNamed(
+            context, '/fast-register-product',
             arguments: scanController.text);
         setState(() {
           unregistered = _unregistred;
@@ -101,12 +98,10 @@ class _ScanDialog extends State<ScanDialog> {
             children: <Widget>[
               TextField(
                 decoration: InputDecoration(
-                    labelText: "Barcode: ",
+                    hintText: "Apasă pentru scanare",
                     errorText: (unscannedPressed)
                         ? "Scanați barcod"
-                        : (unregistered)
-                            ? "Produsul nu este înregistrat"
-                            : null),
+                        : (unregistered) ? "Înregistrat produsul" : null),
                 controller: scanController,
                 enableInteractiveSelection: false,
                 showCursor: false,
@@ -114,8 +109,7 @@ class _ScanDialog extends State<ScanDialog> {
                   var result = await ScanDialog._scan();
                   if (result == '-1') {
                     setState(() {
-                      scanController.text = "Apasă aici pentru a scana barcod";
-                      unscanned = true;
+                      scanController.text = "";
                       unscannedPressed = true;
                     });
                     return;
@@ -126,7 +120,6 @@ class _ScanDialog extends State<ScanDialog> {
                   setState(() {
                     scanController.text = result;
                     unregistered = _unregistered;
-                    unscanned = false;
                     unscannedPressed = false;
                   });
                   quantityFocusNode.requestFocus();

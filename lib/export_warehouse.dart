@@ -84,6 +84,7 @@ class _ExportWarehouse extends State<ExportWarehouse> {
                         DateTime.now().toIso8601String(),
                   },
                   availableStockFunction: Transaction.queryStock,
+                  outFlag: true,
                 );
               },
               barrierDismissible: false,
