@@ -1,28 +1,23 @@
 import 'package:barcode_scanner/database_management.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
-class ProductDialog extends StatefulWidget {
+class FastProductDialog extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _ProductDialog();
 }
 
-class _ProductDialog extends State<ProductDialog> {
+class _ProductDialog extends State<FastProductDialog> {
   var nameController = TextEditingController();
   var emptyNamePressed = false;
   var nameFocusNode = FocusNode();
 
-  var barcodeController = TextEditingController(text: "Apasă pentru scanare");
-  var barcodeFocusNode = FocusNode();
-  var emptyBarcodePressed = false;
-
-  bool barcodeEmpty = true;
+  var barcodeController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    if (nameController.text.length == 0)
-      nameFocusNode.requestFocus();
-    else if (barcodeEmpty) barcodeFocusNode.requestFocus();
+    if (nameController.text.length == 0) nameFocusNode.requestFocus();
+//    print();
+    barcodeController.text = ModalRoute.of(context).settings.arguments;
     return SimpleDialog(
       title: Text("Înregistrare"),
       children: <Widget>[
@@ -42,10 +37,6 @@ class _ProductDialog extends State<ProductDialog> {
                 focusNode: nameFocusNode,
                 keyboardType: TextInputType.text,
                 textInputAction: TextInputAction.next,
-                onSubmitted: (text) {
-                  nameFocusNode.unfocus();
-                  barcodeFocusNode.requestFocus();
-                },
                 onTap: () {
                   nameFocusNode.requestFocus();
                 },
@@ -57,29 +48,11 @@ class _ProductDialog extends State<ProductDialog> {
               ),
               TextField(
                 decoration: InputDecoration(
-                    labelText: "Barcode: ",
-                    errorText: (emptyBarcodePressed) ? "Scanați barcod" : null),
+                  labelText: "Barcode: ",
+                ),
                 controller: barcodeController,
-                focusNode: barcodeFocusNode,
                 enableInteractiveSelection: false,
                 showCursor: false,
-                onTap: () async {
-                  var result = await FlutterBarcodeScanner.scanBarcode(
-                      "#ff4297", "Anulează", true, ScanMode.DEFAULT);
-                  if (result == '-1') {
-                    setState(() {
-                      barcodeController.text = "Apasă pentru scanare";
-                      barcodeEmpty = true;
-                      emptyBarcodePressed = true;
-                    });
-                    return;
-                  }
-                  setState(() {
-                    barcodeController.text = result;
-                    barcodeEmpty = false;
-                    emptyBarcodePressed = false;
-                  });
-                },
               ),
             ],
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -89,23 +62,29 @@ class _ProductDialog extends State<ProductDialog> {
         Row(
           children: <Widget>[
             RaisedButton.icon(
-              label: Text("Anulare"),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              icon: Icon(Icons.cancel),
-            ),
-            RaisedButton.icon(
               onPressed: () async {
-                Product.insert({
-                  Product.name: nameController.text,
-                  Product.barcode: barcodeController.text,
-                  Product.registrationDate: DateTime.now().toIso8601String()
-                });
-                Navigator.pop(context);
+                print(nameController.text.length);
+                if (nameController.text.length > 0) {
+                  Product.insert({
+                    Product.name: nameController.text,
+                    Product.barcode: barcodeController.text,
+                    Product.registrationDate: DateTime.now().toIso8601String()
+                  });
+                  Navigator.pop(context, false);
+                } else
+                  setState(() {
+                    emptyNamePressed = true;
+                  });
               },
               icon: Icon(Icons.done),
               label: Text("Terminat"),
+            ),
+            RaisedButton.icon(
+              label: Text("Anulare"),
+              onPressed: () {
+                Navigator.pop(context, true);
+              },
+              icon: Icon(Icons.cancel),
             )
           ],
           crossAxisAlignment: CrossAxisAlignment.center,
