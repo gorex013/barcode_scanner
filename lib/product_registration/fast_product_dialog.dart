@@ -16,7 +16,6 @@ class _ProductDialog extends State<FastProductDialog> {
   @override
   Widget build(BuildContext context) {
     if (nameController.text.length == 0) nameFocusNode.requestFocus();
-//    print();
     barcodeController.text = ModalRoute.of(context).settings.arguments;
     return SimpleDialog(
       title: Text("Înregistrare"),
@@ -62,8 +61,14 @@ class _ProductDialog extends State<FastProductDialog> {
         Row(
           children: <Widget>[
             RaisedButton.icon(
+              label: Text("Anulare"),
+              onPressed: () {
+                Navigator.pop(context, true);
+              },
+              icon: Icon(Icons.cancel),
+            ),
+            RaisedButton.icon(
               onPressed: () async {
-                print(nameController.text.length);
                 if (nameController.text.length > 0) {
                   Product.insert({
                     Product.name: nameController.text,
@@ -78,13 +83,6 @@ class _ProductDialog extends State<FastProductDialog> {
               },
               icon: Icon(Icons.done),
               label: Text("Terminat"),
-            ),
-            RaisedButton.icon(
-              label: Text("Anulare"),
-              onPressed: () {
-                Navigator.pop(context, true);
-              },
-              icon: Icon(Icons.cancel),
             )
           ],
           crossAxisAlignment: CrossAxisAlignment.center,

@@ -65,7 +65,6 @@ class _ScanDialog extends State<ScanDialog> {
         } else {
           maxStock = double.maxFinite;
         }
-        print(maxStock);
         if (exceedQuantity) {
           setState(() {
             exceedQuantity = number > maxStock;
