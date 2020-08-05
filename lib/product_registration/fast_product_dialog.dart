@@ -63,7 +63,7 @@ class _ProductDialog extends State<FastProductDialog> {
             RaisedButton.icon(
               label: Text("Anulare"),
               onPressed: () {
-                Navigator.pop(context, true);
+                Navigator.pop(context, false);
               },
               icon: Icon(Icons.cancel),
             ),
@@ -75,7 +75,7 @@ class _ProductDialog extends State<FastProductDialog> {
                     Product.barcode: barcodeController.text,
                     Product.registrationDate: DateTime.now().toIso8601String()
                   });
-                  Navigator.pop(context, false);
+                  Navigator.pop(context, true);
                 } else
                   setState(() {
                     emptyNamePressed = true;
