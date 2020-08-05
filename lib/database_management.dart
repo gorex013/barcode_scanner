@@ -108,7 +108,7 @@ class Product {
 }
 
 class Transaction {
-  static final table = 'transaction';
+  static final table = 'transactions';
 
   static final id = 'id';
   static final productId = 'product_id';

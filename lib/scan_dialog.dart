@@ -37,7 +37,7 @@ class _ScanDialog extends State<ScanDialog> {
 
   @override
   Widget build(BuildContext context) {
-    if (unscanned) scanController.text = "Apasă aici pentru a scana barcod";
+    if (unscanned) scanController.text = "Apasă pentru scanare";
     var finishButton = RaisedButton.icon(
       onPressed: () async {
         if (unscanned) {
@@ -83,91 +83,97 @@ class _ScanDialog extends State<ScanDialog> {
       label: Text("Terminat"),
     );
     var registerButton = RaisedButton.icon(
-      onPressed: () async {
+      onPressed: () async{
+        var _unregistred = await Navigator.pushNamed(context, '/fast-register-product',
+            arguments: scanController.text);
         setState(() {
-          Product.insert(
-            {
-              Product.barcode: scanController.text,
-              Product.registrationDate: DateTime.now().toIso8601String()
-            },
-          );
-          unregistered = false;
-          unscanned = false;
+          unregistered = _unregistred;
         });
       },
       icon: Icon(Icons.add),
       label: Text("Înregistrează"),
     );
-    return AlertDialog(
-      insetPadding: EdgeInsets.only(top: 30, bottom: 270),
+    return SimpleDialog(
       title: widget.title,
-      content: Column(
-        children: <Widget>[
-          TextField(
-            decoration: InputDecoration(
-                labelText: "Barcode: ",
-                errorText: (unscannedPressed)
-                    ? "Scanați barcod"
-                    : (unregistered) ? "Produsul nu este înregistrat" : null),
-            controller: scanController,
-            enableInteractiveSelection: false,
-            showCursor: false,
-            onTap: () async {
-              var result = await ScanDialog._scan();
-              if (result == '-1') {
-                setState(() {
-                  scanController.text = "Apasă aici pentru a scana barcod";
-                  unscanned = true;
-                  unscannedPressed = true;
-                });
-                return;
-              }
-              var queryResult = await Product.query(
-                  where: '${Product.barcode} = \"$result\"');
-              var _unregistered = queryResult.length == 0;
-              setState(() {
-                scanController.text = result;
-                unregistered = _unregistered;
-                unscanned = false;
-                unscannedPressed = false;
-              });
-            },
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            children: <Widget>[
+              TextField(
+                decoration: InputDecoration(
+                    labelText: "Barcode: ",
+                    errorText: (unscannedPressed)
+                        ? "Scanați barcod"
+                        : (unregistered)
+                            ? "Produsul nu este înregistrat"
+                            : null),
+                controller: scanController,
+                enableInteractiveSelection: false,
+                showCursor: false,
+                onTap: () async {
+                  var result = await ScanDialog._scan();
+                  if (result == '-1') {
+                    setState(() {
+                      scanController.text = "Apasă aici pentru a scana barcod";
+                      unscanned = true;
+                      unscannedPressed = true;
+                    });
+                    return;
+                  }
+                  var queryResult = await Product.query(
+                      where: '${Product.barcode} = \"$result\"');
+                  var _unregistered = queryResult.length == 0;
+                  setState(() {
+                    scanController.text = result;
+                    unregistered = _unregistered;
+                    unscanned = false;
+                    unscannedPressed = false;
+                  });
+                  quantityFocusNode.requestFocus();
+                },
+              ),
+              TextField(
+                decoration: InputDecoration(
+                  labelText: "Cantitate: ",
+                  hintText: "Cantitate de produs ... ",
+                  errorText: (emptyQuantityPressed)
+                      ? "Completați cantitatea"
+                      : (exceedQuantityPressed)
+                          ? "Nu există așa cantitate în stock"
+                          : null,
+                ),
+                controller: quantityController,
+                focusNode: quantityFocusNode,
+                keyboardType: TextInputType.number,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (text) {
+                  quantityFocusNode.unfocus();
+                },
+                onTap: () {
+                  FocusScope.of(context).requestFocus(quantityFocusNode);
+                },
+                onEditingComplete: () {
+                  quantityFocusNode.unfocus();
+                },
+              ),
+            ],
           ),
-          TextField(
-            decoration: InputDecoration(
-              labelText: "Cantitate: ",
-              hintText: "Cantitate de produs ... ",
-              errorText: (emptyQuantityPressed)
-                  ? "Completați cantitatea"
-                  : (exceedQuantityPressed)
-                      ? "Nu există așa cantitate în stock"
-                      : null,
-            ),
-            controller: quantityController,
-            focusNode: quantityFocusNode,
-            keyboardType: TextInputType.number,
-            textInputAction: TextInputAction.done,
-            onSubmitted: (text) {
-              quantityFocusNode.unfocus();
-            },
-            onTap: () {
-              FocusScope.of(context).requestFocus(quantityFocusNode);
-            },
-            onEditingComplete: () {
-              quantityFocusNode.unfocus();
-            },
-          ),
-        ],
-      ),
-      actions: [
-        RaisedButton.icon(
-          label: Text("Anulare"),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: Icon(Icons.cancel),
         ),
-        (unregistered) ? registerButton : finishButton
+        Row(
+          children: [
+            RaisedButton.icon(
+              label: Text("Anulare"),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: Icon(Icons.cancel),
+            ),
+            (unregistered) ? registerButton : finishButton
+          ],
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        ),
       ],
     );
   }
