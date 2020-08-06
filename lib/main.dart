@@ -1,5 +1,6 @@
 import 'package:barcode_scanner/product_registration/fast_product_dialog.dart';
 import 'package:barcode_scanner/product_registration/product_page.dart';
+import 'package:barcode_scanner/settings_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -69,6 +70,7 @@ class App extends StatelessWidget {
         '/fast-register-product': (context) => FastProductDialog(),
         '/import-warehouse': (context) => ImportWarehouse(),
         '/export-warehouse': (context) => ExportWarehouse(),
+        '/settings': (context) => SettingsPage()
       },
       theme: lightTheme,
       darkTheme: darkTheme,

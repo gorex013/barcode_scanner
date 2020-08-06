@@ -14,6 +14,11 @@ class _HomePageState extends State<HomePage> {
         title: Text(
           'Manager depozit',
         ),
+        actions: <Widget>[
+          IconButton(icon: Icon(Icons.settings), onPressed: (){
+            Navigator.pushNamed(context, '/settings');
+          })
+        ],
       ),
       bottomNavigationBar: SizedBox(
         width: MediaQuery.of(context).size.width - 10,

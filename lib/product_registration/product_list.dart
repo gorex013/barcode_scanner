@@ -9,7 +9,9 @@ class ProductList extends StatelessWidget {
       future: Product.query(),
       builder: (context, snapshot) {
         List<Widget> children = [];
-        if (snapshot.hasError) {
+        if (snapshot.hasData) {
+          history = snapshot.data;
+        } else if (snapshot.hasError) {
           children = <Widget>[
             Icon(
               Icons.error_outline,
@@ -22,7 +24,17 @@ class ProductList extends StatelessWidget {
             )
           ];
         } else {
-          history = snapshot.data;
+          children = <Widget>[
+            SizedBox(
+              child: CircularProgressIndicator(),
+              width: 60,
+              height: 60,
+            ),
+            const Padding(
+              padding: EdgeInsets.only(top: 16),
+              child: Text('Awaiting result...'),
+            )
+          ];
         }
         return (history == null)
             ? Column(
@@ -38,9 +50,12 @@ class ProductList extends StatelessWidget {
                     onTap: () async {
                       var productId = history[i][Product.id];
                       var stock = await Transaction.queryStock(id: productId);
-                      if (stock == null || stock[0] == null || stock[0]['stock'] == null) stock = 0;
+                      if (stock == null ||
+                          stock[0] == null ||
+                          stock[0]['stock'] == null)
+                        stock = 0;
                       else {
-                        stock=stock[0]['stock'];
+                        stock = stock[0]['stock'];
                       }
                       showDialog(
                         context: context,
@@ -48,7 +63,7 @@ class ProductList extends StatelessWidget {
                           content: Text(
                             "Barcode: ${history[i]['barcode']}\n"
                             "Data înregistrării: ${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}\n"
-                                "Stoc: $stock unități",
+                            "Stoc: $stock unități",
                           ),
                         ),
                       );
