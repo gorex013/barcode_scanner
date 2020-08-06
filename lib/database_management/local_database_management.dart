@@ -54,7 +54,7 @@ class AppDatabase {
 }
 
 class Product {
-  static final table = 'product';
+  static final table = 'products';
   static final id = 'id';
   static final barcode = 'barcode';
   static final name = 'name';

@@ -1,4 +1,4 @@
-import 'package:barcode_scanner/database_management.dart';
+import 'package:barcode_scanner/database_management/local_database_management.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 

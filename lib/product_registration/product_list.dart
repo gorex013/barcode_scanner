@@ -1,4 +1,4 @@
-import 'package:barcode_scanner/database_management.dart';
+import 'package:barcode_scanner/database_management/local_database_management.dart';
 import 'package:flutter/material.dart';
 
 class ProductList extends StatelessWidget {
