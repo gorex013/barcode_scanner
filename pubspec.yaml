@@ -34,6 +34,8 @@ dependencies:
   path:
   path_provider:
   http:
+  connectivity:
+  app_settings:
 
 dev_dependencies:
   flutter_test:

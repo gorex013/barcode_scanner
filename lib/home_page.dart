@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
@@ -15,11 +18,52 @@ class _HomePageState extends State<HomePage> {
           'Manager depozit',
         ),
         actions: <Widget>[
-          IconButton(icon: Icon(Icons.settings), onPressed: (){
-            Navigator.pushNamed(context, '/settings');
-          })
+          IconButton(
+              icon: Icon(Icons.settings),
+              onPressed: () {
+                Navigator.pushNamed(context, '/settings');
+              })
         ],
       ),
+      body: HomeBody(),
+    );
+  }
+}
+
+class HomeBody extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => _HomeBody();
+}
+
+class _HomeBody extends State<HomeBody> {
+  var localConnection;
+  var internetConnection;
+
+  void checkConnection() async {
+    var _localConnection =
+        await Connectivity().checkConnectivity() != ConnectivityResult.none;
+    var _internetConnection;
+    try {
+      final result = await InternetAddress.lookup('google.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        _internetConnection = true;
+      } else {
+        _internetConnection = false;
+      }
+    } on SocketException catch (_) {
+      _internetConnection = false;
+    }
+
+    setState(() {
+      localConnection = _localConnection;
+      internetConnection = _internetConnection;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    checkConnection();
+    return Scaffold(
       bottomNavigationBar: SizedBox(
         width: MediaQuery.of(context).size.width - 10,
         child: RaisedButton.icon(
@@ -30,9 +74,7 @@ class _HomePageState extends State<HomePage> {
           ),
           label: Text("Înregistrare produs"),
           icon: Icon(Icons.settings_overscan),
-          onPressed: () {
-            Navigator.pushNamed(context, '/register-product');
-          },
+          onPressed: () => connected(context, '/register-product'),
         ),
       ),
       floatingActionButton: Row(
@@ -47,9 +89,7 @@ class _HomePageState extends State<HomePage> {
               ),
               label: Text("Depozitare produse"),
               icon: Icon(Icons.arrow_downward),
-              onPressed: () {
-                Navigator.pushNamed(context, '/import-warehouse');
-              },
+              onPressed: () => connected(context, '/import-warehouse'),
             ),
           ),
           SizedBox(
@@ -61,9 +101,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               label: Text("Extragere produse"),
-              onPressed: () async {
-                Navigator.pushNamed(context, '/export-warehouse');
-              },
+              onPressed: () => connected(context, '/export-warehouse'),
               icon: Icon(Icons.arrow_upward),
             ),
           ),
@@ -73,5 +111,23 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
+  }
+
+  void connected(context, route) {
+    checkConnection();
+    if (internetConnection)
+      Navigator.pushNamed(context, route);
+    else
+      Scaffold.of(context).showSnackBar(
+        SnackBar(
+          content: Text((localConnection)
+              ? "Aveți doar connexiune locală!"
+              : "Nu aveți conexiune!"),
+          action: SnackBarAction(
+            onPressed: () {},
+            label: "Verifică conexiunea",
+          ),
+        ),
+      );
   }
 }
