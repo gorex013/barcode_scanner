@@ -22,8 +22,12 @@ class Transaction {
   static final quantity = 'quantity';
   static final transactionDate = 'transaction_date';
   static query() async {}
+
+  // for import quantity > 0
   static queryImport() async {}
+  // for export quantity < 0
   static queryExport() async {}
+  // stock is sum(quantity)
   static queryStock({int id, String barcode}) async {}
   static insert(Map<String, dynamic> row) async {}
   static update(Map<String, dynamic> row) async {}
