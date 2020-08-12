@@ -76,7 +76,7 @@ class _ScanDialog extends State<ScanDialog> {
           var maxStock;
           if (widget.availableStockFunction != null) {
             maxStock = await widget.availableStockFunction(id: barcodeID);
-            maxStock = maxStock[0]['stock'];
+//            maxStock = maxStock[0]['stock'];
           }
           if (maxStock == null) maxStock = 0;
           if (number > maxStock) {

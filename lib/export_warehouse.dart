@@ -1,7 +1,7 @@
 import 'package:barcode_scanner/scan_dialog.dart';
 import 'package:flutter/material.dart';
 
-import 'database_management/local_database_management.dart';
+import 'database_management/remote_database_management.dart';
 
 class ExportWarehouse extends StatefulWidget {
   @override

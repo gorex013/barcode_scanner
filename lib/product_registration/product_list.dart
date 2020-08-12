@@ -1,4 +1,4 @@
-import 'package:barcode_scanner/database_management/local_database_management.dart';
+import 'package:barcode_scanner/database_management/remote_database_management.dart';
 import 'package:flutter/material.dart';
 
 class ProductList extends StatelessWidget {
@@ -20,7 +20,7 @@ class ProductList extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.only(top: 16),
-              child: Text('Error: ${snapshot.error}'),
+              child: Text('Eroare la încărcare: ${snapshot.error}'),
             )
           ];
         } else {
@@ -32,14 +32,18 @@ class ProductList extends StatelessWidget {
             ),
             const Padding(
               padding: EdgeInsets.only(top: 16),
-              child: Text('Awaiting result...'),
+              child: Text('Se încarcă produsele înregistrate...'),
             )
           ];
         }
         return (history == null)
-            ? Column(
-                children: children,
-              )
+            ? Center(
+              child: Column(
+                  children: children,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+                ),
+            )
             : ListView.builder(
                 itemCount: history.length,
                 itemBuilder: (context, i) {
@@ -50,13 +54,13 @@ class ProductList extends StatelessWidget {
                     onTap: () async {
                       var productId = history[i][Product.id];
                       var stock = await Transaction.queryStock(id: productId);
-                      if (stock == null ||
-                          stock[0] == null ||
-                          stock[0]['stock'] == null)
-                        stock = 0;
-                      else {
-                        stock = stock[0]['stock'];
-                      }
+//                      if (stock == null ||
+//                          stock[0] == null ||
+//                          stock[0]['stock'] == null)
+//                        stock = 0;
+//                      else {
+//                        stock = stock[0]['stock'];
+//                      }
                       showDialog(
                         context: context,
                         builder: (context) => AlertDialog(
