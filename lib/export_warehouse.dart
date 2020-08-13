@@ -39,8 +39,20 @@ class _ExportWarehouse extends State<ExportWarehouse> {
                 child: Text('Error: ${snapshot.error}'),
               )
             ];
-          } else {
+          } else if (snapshot.hasData) {
             history = snapshot.data;
+          } else {
+            children = <Widget>[
+              SizedBox(
+                child: CircularProgressIndicator(),
+                width: 60,
+                height: 60,
+              ),
+              const Padding(
+                padding: EdgeInsets.only(top: 16),
+                child: Text('Se încarcă produsele înregistrate...'),
+              )
+            ];
           }
           return (history == null)
               ? Column(
@@ -49,8 +61,8 @@ class _ExportWarehouse extends State<ExportWarehouse> {
               : ListView.builder(
                   itemCount: history.length,
                   itemBuilder: (context, i) {
-                    var exportDate = DateTime.parse(
-                        history[i][Transaction.transactionDate]);
+                    var exportDate =
+                        DateTime.parse(history[i][Transaction.transactionDate]);
                     return ListTile(
                       title: Text(
                           "${i + 1}. Barcode: ${history[i][Product.barcode]}\nQuantity: ${history[i][Transaction.quantity]}\n"

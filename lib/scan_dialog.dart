@@ -1,4 +1,4 @@
-import 'package:barcode_scanner/database_management/local_database_management.dart';
+import 'package:barcode_scanner/database_management/remote_database_management.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
@@ -43,10 +43,7 @@ class _ScanDialog extends State<ScanDialog> {
           });
           return;
         }
-        var barcodeID = await Product.query(
-          columns: [Product.id],
-          where: '${Product.barcode} = \"${scanController.text}\"',
-        );
+        var barcodeID = await Product.queryId(scanController.text);
         if (barcodeID == null) {
           setState(() {
             scanned = true;
@@ -54,7 +51,7 @@ class _ScanDialog extends State<ScanDialog> {
           });
           return;
         }
-        barcodeID = barcodeID[0][Product.id];
+        barcodeID = barcodeID[Product.id];
         if (quantityController.text.isEmpty) {
           setState(() {
             scanned = true;
@@ -135,8 +132,7 @@ class _ScanDialog extends State<ScanDialog> {
                     });
                     return;
                   }
-                  var queryResult = await Product.query(
-                      where: '${Product.barcode} = \"$result\"');
+                  var queryResult = await Product.queryId(result);
                   var _registered = queryResult.length != 0;
                   setState(() {
                     scanController.text = result;

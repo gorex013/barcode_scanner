@@ -39,8 +39,20 @@ class _ImportWarehouse extends State<ImportWarehouse> {
                 child: Text('Error: ${snapshot.error}'),
               )
             ];
-          } else {
+          } else if (snapshot.hasData){
             history = snapshot.data;
+          } else {
+            children = <Widget>[
+              SizedBox(
+                child: CircularProgressIndicator(),
+                width: 60,
+                height: 60,
+              ),
+              const Padding(
+                padding: EdgeInsets.only(top: 16),
+                child: Text('Se încarcă produsele înregistrate...'),
+              )
+            ];
           }
           return (history == null)
               ? Column(
