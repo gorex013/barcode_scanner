@@ -64,41 +64,26 @@ class Transaction {
 
   // for import quantity > 0
   static queryImport() async {
-    var import = [];
-    final allTransactions = await query();
-    for(var i=0; i<allTransactions.length;++i){
-      if(allTransactions[i]['quantity'] > 0){
-        import.add(allTransactions[i]);
-      }
-    }
-    return import;
+    final apiKey = await readKey();
+    var source =
+        await get('http://$host:$port/api/import_transaction?api_token=$apiKey');
+    return jsonDecode(source.body);
   }
 
   // for export quantity < 0
   static queryExport() async {
-    var export = [];
-    final allTransactions = await query();
-    for(var i=0; i<allTransactions.length;++i){
-      if(allTransactions[i]['quantity'] < 0){
-        export.add(allTransactions[i]);
-      }
-    }
-    return export;
+    final apiKey = await readKey();
+    var source =
+        await get('http://$host:$port/api/export_transaction?api_token=$apiKey');
+    return jsonDecode(source.body);
   }
 
   // stock is sum(quantity)
   static queryStock({int id, String barcode}) async {
-    final allTransactions = await query();
-    var stock = 0;
-    for(var i=0; i<allTransactions.length;++i){
-      var productId = allTransactions[i]['product_id'];
-      var quantity = allTransactions[i]['quantity'];
-      print(productId);
-      if(productId == id){
-        stock += quantity;
-      }
-    }
-    return stock;
+    final apiKey = await readKey();
+    var source =
+        await get('http://$host:$port/api/stock/$id?api_token=$apiKey');
+    return jsonDecode(source.body);
   }
 
   static insert(Map<String, dynamic> row) async {
