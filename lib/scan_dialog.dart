@@ -51,7 +51,7 @@ class _ScanDialog extends State<ScanDialog> {
           });
           return;
         }
-        barcodeID = barcodeID[Product.id];
+        barcodeID = barcodeID[0][Product.id];
         if (quantityController.text.isEmpty) {
           setState(() {
             scanned = true;
