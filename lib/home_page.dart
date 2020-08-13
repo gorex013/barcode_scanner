@@ -45,11 +45,8 @@ class _HomeBody extends State<HomeBody> {
     var _internetConnection;
     try {
       final result = await InternetAddress.lookup('google.com');
-      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-        _internetConnection = true;
-      } else {
-        _internetConnection = false;
-      }
+      _internetConnection =
+          result.isNotEmpty && result[0].rawAddress.isNotEmpty;
     } on SocketException catch (_) {
       _internetConnection = false;
     }

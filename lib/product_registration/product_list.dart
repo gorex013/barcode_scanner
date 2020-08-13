@@ -54,13 +54,6 @@ class ProductList extends StatelessWidget {
                     onTap: () async {
                       var productId = history[i][Product.id];
                       var stock = await Transaction.queryStock(id: productId);
-//                      if (stock == null ||
-//                          stock[0] == null ||
-//                          stock[0]['stock'] == null)
-//                        stock = 0;
-//                      else {
-//                        stock = stock[0]['stock'];
-//                      }
                       showDialog(
                         context: context,
                         builder: (context) => AlertDialog(
