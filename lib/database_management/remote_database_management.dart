@@ -10,7 +10,23 @@ class Connector{
   static readKey() async {
     final directory = await getApplicationDocumentsDirectory();
     final apiFile = File('${directory.path}/warehouse.key');
+    if (! await apiFile.exists()){
+      throw Error.safeToString("Introduceți API key în setări!");
+    }
     final apiKey = utf8.decode(await apiFile.readAsBytes());
+    if(apiKey == null || apiKey.isEmpty)
+      throw Error.safeToString("Setați API key pentru a accesa baza de date!");
+    var serverConnection;
+    try {
+      final result = await InternetAddress.lookup('$host:$port');
+      serverConnection =
+          result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+    } on SocketException catch (_) {
+      serverConnection = false;
+    }
+    if(!serverConnection){
+      throw Error.safeToString("Nu există conexiune la baza de date!");
+    }
     return apiKey;
   }
 }

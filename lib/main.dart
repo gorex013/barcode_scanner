@@ -4,6 +4,7 @@ import 'package:barcode_scanner/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'database_management/remote_database_management.dart';
 import 'export_warehouse.dart';
 import 'home_page.dart';
 import 'import_warehouse.dart';
@@ -64,7 +65,7 @@ class App extends StatelessWidget {
       title: 'Manager depozit',
       initialRoute: '/',
       routes: {
-        '/': (context) => HomePage(),
+        '/': (context) => HomePage(host: Connector.host, port: Connector.port,),
         '/register-product': (context) => RegisterProduct(),
         '/fast-register-product': (context) => FastProductDialog(),
         '/import-warehouse': (context) => ImportWarehouse(),

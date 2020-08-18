@@ -36,10 +36,10 @@ class _ImportWarehouse extends State<ImportWarehouse> {
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 16),
-                child: Text('Error: ${snapshot.error}'),
+                child: Text('Eroare: ${snapshot.error}'),
               )
             ];
-          } else if (snapshot.hasData){
+          } else if (snapshot.hasData) {
             history = snapshot.data;
           } else {
             children = <Widget>[
@@ -50,13 +50,17 @@ class _ImportWarehouse extends State<ImportWarehouse> {
               ),
               const Padding(
                 padding: EdgeInsets.only(top: 16),
-                child: Text('Se încarcă produsele înregistrate...'),
+                child: Text('Se încarcă tranzacțiile efectuate...'),
               )
             ];
           }
           return (history == null)
-              ? Column(
-                  children: children,
+              ? Center(
+                  child: Column(
+                    children: children,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                  ),
                 )
               : ListView.builder(
                   itemCount: history.length,

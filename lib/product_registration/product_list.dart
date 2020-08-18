@@ -20,7 +20,7 @@ class ProductList extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.only(top: 16),
-              child: Text('Eroare la încărcare: ${snapshot.error}'),
+              child: Text('Eroare : ${snapshot.error}'),
             )
           ];
         } else {
@@ -38,12 +38,12 @@ class ProductList extends StatelessWidget {
         }
         return (history == null)
             ? Center(
-              child: Column(
+                child: Column(
                   children: children,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
                 ),
-            )
+              )
             : ListView.builder(
                 itemCount: history.length,
                 itemBuilder: (context, i) {

@@ -103,6 +103,7 @@ class _ProductDialog extends State<ProductDialog> {
                   Product.registrationDate: DateTime.now().toIso8601String()
                 });
                 Navigator.pop(context);
+                Navigator.pushReplacementNamed(context, '/register-product');
               },
               icon: Icon(Icons.done),
               label: Text("Terminat"),

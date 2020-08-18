@@ -1,10 +1,12 @@
-import 'dart:io';
-
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 class HomePage extends StatefulWidget {
+  final host;
+  final port;
+
+  const HomePage({Key key, this.host, this.port}) : super(key: key);
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -25,35 +27,33 @@ class _HomePageState extends State<HomePage> {
               })
         ],
       ),
-      body: HomeBody(),
+      body: HomeBody(host: widget.host,port: widget.port,),
     );
   }
 }
 
 class HomeBody extends StatefulWidget {
+  final host;
+  final port;
+
+  const HomeBody({Key key, this.host, this.port}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() => _HomeBody();
 }
 
 class _HomeBody extends State<HomeBody> {
   var localConnection;
-  var internetConnection;
 
   void checkConnection() async {
-    var _localConnection =
-        await Connectivity().checkConnectivity() != ConnectivityResult.none;
-    var _internetConnection;
-    try {
-      final result = await InternetAddress.lookup('google.com');
-      _internetConnection =
-          result.isNotEmpty && result[0].rawAddress.isNotEmpty;
-    } on SocketException catch (_) {
-      _internetConnection = false;
-    }
+    var _localConnction;
+    if (widget.host == null || widget.port == null)
+      _localConnction = false;
+    else
+      _localConnction = await Connectivity().checkConnectivity() == ConnectivityResult.wifi;
 
     setState(() {
-      localConnection = _localConnection;
-      internetConnection = _internetConnection;
+      localConnection = _localConnction;
     });
   }
 
@@ -112,14 +112,12 @@ class _HomeBody extends State<HomeBody> {
 
   void connected(context, route) {
     checkConnection();
-    if (internetConnection)
+    if (localConnection)
       Navigator.pushNamed(context, route);
     else
       Scaffold.of(context).showSnackBar(
         SnackBar(
-          content: Text((localConnection)
-              ? "Aveți doar connexiune locală!"
-              : "Nu aveți conexiune!"),
+          content: Text("Nu aveți conexiune!"),
           action: SnackBarAction(
             onPressed: () {},
             label: "Verifică conexiunea",
