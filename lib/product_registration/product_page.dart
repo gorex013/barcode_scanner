@@ -27,7 +27,11 @@ class _RegisterProduct extends State<RegisterProduct> {
         ),
         title: Text("Înregistrare produse"),
       ),
-      body: ProductList(),
+      body: ProductList(
+        host: widget.host,
+        port: widget.port,
+        apiKey: widget.apiKey,
+      ),
       bottomNavigationBar: BottomButton(),
     );
   }

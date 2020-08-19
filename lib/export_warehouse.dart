@@ -8,7 +8,8 @@ class ExportWarehouse extends StatefulWidget {
   final port;
   final apiKey;
 
-  const ExportWarehouse({Key key, this.host, this.port, this.apiKey}) : super(key: key);
+  const ExportWarehouse({Key key, this.host, this.port, this.apiKey})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _ExportWarehouse();

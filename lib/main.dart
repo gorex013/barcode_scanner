@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:barcode_scanner/product_registration/fast_product_dialog.dart';
 import 'package:barcode_scanner/product_registration/product_page.dart';
-import 'package:barcode_scanner/settings_page.dart';
+import 'package:barcode_scanner/settings/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
@@ -12,20 +12,25 @@ import 'export_warehouse.dart';
 import 'home_page.dart';
 import 'import_warehouse.dart';
 
-void main() async {
-  var apiKey;
-  var dir = await getApplicationDocumentsDirectory();
-  var apiFile = File('${dir.path}/warehouse.key');
-  if (await apiFile.exists()) {
-    apiKey = utf8.decode(await apiFile.readAsBytes());
-  }
-  runApp(App('192.168.0.63', '8000', apiKey));
+void main() {
+  runApp(App('192.168.88.227', '8000'));
 }
 
 class App extends StatelessWidget {
   final host;
   final port;
-  final apiKey;
+
+  readKey() async {
+    var apiKey;
+    var dir = await getApplicationDocumentsDirectory();
+    var apiFile = File('${dir.path}/warehouse.key');
+    if (await apiFile.exists()) {
+      apiKey = utf8.decode(await apiFile.readAsBytes());
+    } else
+      apiKey = null;
+    return apiKey;
+  }
+
   final lightTheme = ThemeData(
     brightness: Brightness.light,
     primarySwatch: MaterialColor(
@@ -69,8 +74,7 @@ class App extends StatelessWidget {
 
   App(
     this.host,
-    this.port,
-    this.apiKey, {
+    this.port, {
     Key key,
   }) : super(key: key);
 
@@ -80,30 +84,40 @@ class App extends StatelessWidget {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
-    return MaterialApp(
-      title: 'Manager depozit',
-      initialRoute: '/',
-      routes: {
-        '/': (context) => HomePage(
-              host: host,
-              port: port,
-              apiKey: apiKey,
-            ),
-        '/register-product': (context) =>
-            RegisterProduct(host: host, port: port, apiKey: apiKey),
-        '/fast-register-product': (context) => FastProductDialog(
-              host: host,
-              port: port,
-              apiKey: apiKey,
-            ),
-        '/import-warehouse': (context) =>
-            ImportWarehouse(host: host, port: port, apiKey: apiKey),
-        '/export-warehouse': (context) =>
-            ExportWarehouse(host: host, port: port, apiKey: apiKey),
-        '/settings': (context) => SettingsPage(host: host, port: port)
+    var apiKey;
+    return FutureBuilder(
+      future: readKey(),
+      builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+        if (snapshot.hasError) {
+          apiKey = null;
+        } else if (snapshot.hasData) apiKey = snapshot.data;
+        if (apiKey == "") apiKey = null;
+        return MaterialApp(
+          title: 'Manager depozit',
+          initialRoute: '/',
+          routes: {
+            '/': (context) => HomePage(
+                  host: host,
+                  port: port,
+                  apiKey: apiKey,
+                ),
+            '/register-product': (context) =>
+                RegisterProduct(host: host, port: port, apiKey: apiKey),
+            '/fast-register-product': (context) => FastProductDialog(
+                  host: host,
+                  port: port,
+                  apiKey: apiKey,
+                ),
+            '/import-warehouse': (context) =>
+                ImportWarehouse(host: host, port: port, apiKey: apiKey),
+            '/export-warehouse': (context) =>
+                ExportWarehouse(host: host, port: port, apiKey: apiKey),
+            '/settings': (context) => SettingsPage(host: host, port: port)
+          },
+          theme: lightTheme,
+          darkTheme: darkTheme,
+        );
       },
-      theme: lightTheme,
-      darkTheme: darkTheme,
     );
   }
 }

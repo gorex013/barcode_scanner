@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 
 class ProductList extends StatelessWidget {
   final host;
-
   final port;
-
   final apiKey;
 
   const ProductList({Key key, this.host, this.port, this.apiKey}) : super(key: key);

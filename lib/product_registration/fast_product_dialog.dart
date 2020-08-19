@@ -7,7 +7,9 @@ class FastProductDialog extends StatefulWidget {
 
   final apiKey;
 
-  const FastProductDialog({Key key, this.host, this.port, this.apiKey}) : super(key: key);
+  const FastProductDialog({Key key, this.host, this.port, this.apiKey})
+      : super(key: key);
+
   @override
   State<StatefulWidget> createState() => _ProductDialog();
 }

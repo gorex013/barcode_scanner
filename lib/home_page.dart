@@ -1,19 +1,39 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:app_settings/app_settings.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:path_provider/path_provider.dart';
 
 class HomePage extends StatefulWidget {
   final host;
   final port;
   final apiKey;
-  const HomePage({Key key, this.host, this.port, this.apiKey}) : super(key: key);
+
+  const HomePage({Key key, this.host, this.port, this.apiKey})
+      : super(key: key);
+
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
+  var apiKey;
+
+  readKey() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final apiFile = File('${directory.path}/warehouse.key');
+    if (!await apiFile.exists()) return null;
+    final apiKey = utf8.decode(await apiFile.readAsBytes());
+    if (apiKey.isEmpty) return null;
+    return apiKey;
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (apiKey == null) apiKey = widget.apiKey;
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -22,12 +42,40 @@ class _HomePageState extends State<HomePage> {
         actions: <Widget>[
           IconButton(
               icon: Icon(Icons.settings),
-              onPressed: () {
-                Navigator.pushNamed(context, '/settings');
+              onPressed: () async {
+                var needReload =
+                    await Navigator.pushNamed(context, '/settings');
+                if (needReload) {
+                  var _apiKey = await readKey();
+                  setState(() {
+                    apiKey = _apiKey;
+                  });
+                }
               })
         ],
       ),
-      body: HomeBody(host: widget.host,port: widget.port,),
+      body: (apiKey != null)
+          ? HomeBody(
+              host: widget.host,
+              port: widget.port,
+            )
+          : Center(
+              child: Column(
+                children: <Widget>[
+                  Icon(
+                    Icons.error_outline,
+                    color: Colors.red,
+                    size: 60,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Text('Eroare : Setați API key sau conectați-vă!'),
+                  )
+                ],
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+              ),
+            ),
     );
   }
 }
@@ -50,7 +98,8 @@ class _HomeBody extends State<HomeBody> {
     if (widget.host == null || widget.port == null)
       _localConnction = false;
     else
-      _localConnction = await Connectivity().checkConnectivity() == ConnectivityResult.wifi;
+      _localConnction =
+          await Connectivity().checkConnectivity() == ConnectivityResult.wifi;
 
     setState(() {
       localConnection = _localConnction;
@@ -119,7 +168,9 @@ class _HomeBody extends State<HomeBody> {
         SnackBar(
           content: Text("Nu aveți conexiune!"),
           action: SnackBarAction(
-            onPressed: () {},
+            onPressed: () {
+              AppSettings.openWIFISettings();
+            },
             label: "Verifică conexiunea",
           ),
         ),
