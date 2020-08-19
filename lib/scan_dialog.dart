@@ -3,18 +3,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 class ScanDialog extends StatefulWidget {
+  final host;
+  final port;
   final title;
   final transactionInsert;
   final mapperFunction;
   final availableStockFunction;
   final outFlag;
+  final apiKey;
 
   static _scan() async {
     return FlutterBarcodeScanner.scanBarcode(
         "#ff4297", "Anulează", true, ScanMode.DEFAULT);
   }
 
-  ScanDialog(this.title, this.transactionInsert, this.mapperFunction,
+  ScanDialog(this.host, this.port, this.apiKey, this.title,
+      this.transactionInsert, this.mapperFunction,
       {this.availableStockFunction, this.outFlag = false});
 
   @override
@@ -35,6 +39,7 @@ class _ScanDialog extends State<ScanDialog> {
 
   @override
   Widget build(BuildContext context) {
+    var product = Product(widget.host, widget.port, widget.apiKey);
     var finishButton = RaisedButton.icon(
       onPressed: () async {
         if (scanController.text.isEmpty) {
@@ -43,7 +48,7 @@ class _ScanDialog extends State<ScanDialog> {
           });
           return;
         }
-        var barcodeID = await Product.queryId(scanController.text);
+        var barcodeID = await product.queryId(scanController.text);
         if (barcodeID == null) {
           setState(() {
             scanned = true;
@@ -132,7 +137,7 @@ class _ScanDialog extends State<ScanDialog> {
                     });
                     return;
                   }
-                  var queryResult = await Product.queryId(result);
+                  var queryResult = await product.queryId(result);
                   var _registered = queryResult.length != 0;
                   setState(() {
                     scanController.text = result;

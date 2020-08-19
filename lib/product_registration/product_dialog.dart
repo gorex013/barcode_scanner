@@ -3,6 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 class ProductDialog extends StatefulWidget {
+  final host;
+  final port;
+  final apiKey;
+
+  const ProductDialog({Key key, this.host, this.port, this.apiKey})
+      : super(key: key);
+
   @override
   State<StatefulWidget> createState() => _ProductDialog();
 }
@@ -20,6 +27,7 @@ class _ProductDialog extends State<ProductDialog> {
 
   @override
   Widget build(BuildContext context) {
+    var product = Product(widget.host, widget.port, widget.apiKey);
     if (nameController.text.length == 0)
       nameFocusNode.requestFocus();
     else if (barcodeEmpty) barcodeFocusNode.requestFocus();
@@ -97,7 +105,7 @@ class _ProductDialog extends State<ProductDialog> {
             ),
             RaisedButton.icon(
               onPressed: () async {
-                Product.insert({
+                product.insert({
                   Product.name: nameController.text,
                   Product.barcode: barcodeController.text,
                   Product.registrationDate: DateTime.now().toIso8601String()

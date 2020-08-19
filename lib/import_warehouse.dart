@@ -4,6 +4,12 @@ import 'package:flutter/material.dart';
 import 'database_management/remote_database_management.dart';
 
 class ImportWarehouse extends StatefulWidget {
+  final host;
+  final port;
+  final apiKey;
+
+  const ImportWarehouse({Key key, this.host, this.port, this.apiKey}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() => _ImportWarehouse();
 }
@@ -13,6 +19,7 @@ class _ImportWarehouse extends State<ImportWarehouse> {
 
   @override
   Widget build(BuildContext context) {
+    var transaction = Transaction(widget.host, widget.port, widget.apiKey);
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -24,7 +31,7 @@ class _ImportWarehouse extends State<ImportWarehouse> {
         title: Text("Depozitare"),
       ),
       body: FutureBuilder(
-        future: Transaction.queryImport(),
+        future: transaction.queryImport(),
         builder: (context, snapshot) {
           List<Widget> children = [];
           if (snapshot.hasError) {
@@ -91,8 +98,11 @@ class _ImportWarehouse extends State<ImportWarehouse> {
               context: context,
               builder: (context) {
                 return ScanDialog(
+                  widget.host,
+                  widget.port,
+                  widget.apiKey,
                   Text('Depozitare produs'),
-                  Transaction.insert,
+                  transaction.insert,
                   (id, quantity) => <String, dynamic>{
                     Transaction.productId: id,
                     Transaction.quantity: quantity,

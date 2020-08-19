@@ -5,11 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
 class SettingsPage extends StatefulWidget {
+  final host;
+  final port;
+
+  const SettingsPage({Key key, this.host, this.port}) : super(key: key);
+
   @override
-  State<StatefulWidget> createState() => _SettingsPage();
+  State<StatefulWidget> createState() => _APIKeySettingsPage();
 }
 
-class _SettingsPage extends State<SettingsPage> {
+class _APIKeySettingsPage extends State<SettingsPage> {
   readKey() async {
     final directory = await getApplicationDocumentsDirectory();
     final apiFile = File('${directory.path}/warehouse.key');
@@ -18,6 +23,8 @@ class _SettingsPage extends State<SettingsPage> {
   }
 
   var apiKeyController = TextEditingController();
+  var loginController = TextEditingController();
+  var passwordController = TextEditingController();
   var pressedReset = false;
 
   @override
@@ -35,30 +42,30 @@ class _SettingsPage extends State<SettingsPage> {
       body: FutureBuilder(
           future: readKey(),
           builder: (context, snapshot) {
-            if (snapshot.hasData && !pressedReset) {
-              apiKeyController.text = snapshot.data;
-            }
-            return Padding(
+            var apiKeyTextField = Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               child: TextField(
                 autofocus: true,
                 controller: apiKeyController,
                 decoration: InputDecoration(
-                    labelText: "API key:",
-                    hintText: "Set de caractere random ... ",
-                    helperText:
-                        "Această cheie o primești de la adminitrator după înregistrare",
-                    suffixIcon: IconButton(
-                      icon: Icon(Icons.cancel),
-                      onPressed: () {
-                        setState(() {
-                          apiKeyController.text = "";
-                          pressedReset = true;
-                        });
-                      },
-                    )),
+                  labelText: "API key:",
+                  suffixIcon: IconButton(
+                    icon: Icon(Icons.cancel),
+                    onPressed: () {
+                      setState(() {
+                        apiKeyController.text = "";
+                        pressedReset = true;
+                      });
+                    },
+                  ),
+                ),
               ),
             );
+
+            if (snapshot.hasData && !pressedReset) {
+              apiKeyController.text = snapshot.data;
+            }
+            return apiKeyTextField;
           }),
       floatingActionButton: SizedBox(
         width: MediaQuery.of(context).size.width - 20,

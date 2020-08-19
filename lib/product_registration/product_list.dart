@@ -2,11 +2,22 @@ import 'package:barcode_scanner/database_management/remote_database_management.d
 import 'package:flutter/material.dart';
 
 class ProductList extends StatelessWidget {
+  final host;
+
+  final port;
+
+  final apiKey;
+
+  const ProductList({Key key, this.host, this.port, this.apiKey}) : super(key: key);
+
+
   @override
   Widget build(BuildContext context) {
     var history;
+    var product = Product(host, port, apiKey);
+    var transaction = Transaction(host, port, apiKey);
     return FutureBuilder(
-      future: Product.query(),
+      future: product.query(),
       builder: (context, snapshot) {
         List<Widget> children = [];
         if (snapshot.hasData) {
@@ -53,7 +64,7 @@ class ProductList extends StatelessWidget {
                     title: Text("${i + 1}. ${history[i][Product.name]}"),
                     onTap: () async {
                       var productId = history[i][Product.id];
-                      var stock = await Transaction.queryStock(id: productId);
+                      var stock = await transaction.queryStock(id: productId);
                       showDialog(
                         context: context,
                         builder: (context) => AlertDialog(

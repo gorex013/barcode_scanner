@@ -1,19 +1,31 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:barcode_scanner/product_registration/fast_product_dialog.dart';
 import 'package:barcode_scanner/product_registration/product_page.dart';
 import 'package:barcode_scanner/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 
-import 'database_management/remote_database_management.dart';
 import 'export_warehouse.dart';
 import 'home_page.dart';
 import 'import_warehouse.dart';
 
-void main() {
-  runApp(App());
+void main() async {
+  var apiKey;
+  var dir = await getApplicationDocumentsDirectory();
+  var apiFile = File('${dir.path}/warehouse.key');
+  if (await apiFile.exists()) {
+    apiKey = utf8.decode(await apiFile.readAsBytes());
+  }
+  runApp(App('192.168.0.63', '8000', apiKey));
 }
 
 class App extends StatelessWidget {
+  final host;
+  final port;
+  final apiKey;
   final lightTheme = ThemeData(
     brightness: Brightness.light,
     primarySwatch: MaterialColor(
@@ -55,6 +67,13 @@ class App extends StatelessWidget {
     accentColor: Color(0xFFB4969F),
   );
 
+  App(
+    this.host,
+    this.port,
+    this.apiKey, {
+    Key key,
+  }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([
@@ -65,12 +84,23 @@ class App extends StatelessWidget {
       title: 'Manager depozit',
       initialRoute: '/',
       routes: {
-        '/': (context) => HomePage(host: Connector.host, port: Connector.port,),
-        '/register-product': (context) => RegisterProduct(),
-        '/fast-register-product': (context) => FastProductDialog(),
-        '/import-warehouse': (context) => ImportWarehouse(),
-        '/export-warehouse': (context) => ExportWarehouse(),
-        '/settings': (context) => SettingsPage()
+        '/': (context) => HomePage(
+              host: host,
+              port: port,
+              apiKey: apiKey,
+            ),
+        '/register-product': (context) =>
+            RegisterProduct(host: host, port: port, apiKey: apiKey),
+        '/fast-register-product': (context) => FastProductDialog(
+              host: host,
+              port: port,
+              apiKey: apiKey,
+            ),
+        '/import-warehouse': (context) =>
+            ImportWarehouse(host: host, port: port, apiKey: apiKey),
+        '/export-warehouse': (context) =>
+            ExportWarehouse(host: host, port: port, apiKey: apiKey),
+        '/settings': (context) => SettingsPage(host: host, port: port)
       },
       theme: lightTheme,
       darkTheme: darkTheme,

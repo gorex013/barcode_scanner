@@ -3,6 +3,13 @@ import 'package:barcode_scanner/product_registration/product_list.dart';
 import 'package:flutter/material.dart';
 
 class RegisterProduct extends StatefulWidget {
+  final host;
+  final port;
+  final apiKey;
+
+  const RegisterProduct({Key key, this.host, this.port, this.apiKey})
+      : super(key: key);
+
   @override
   State<StatefulWidget> createState() => _RegisterProduct();
 }

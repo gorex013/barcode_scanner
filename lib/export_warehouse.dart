@@ -4,6 +4,12 @@ import 'package:flutter/material.dart';
 import 'database_management/remote_database_management.dart';
 
 class ExportWarehouse extends StatefulWidget {
+  final host;
+  final port;
+  final apiKey;
+
+  const ExportWarehouse({Key key, this.host, this.port, this.apiKey}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() => _ExportWarehouse();
 }
@@ -13,6 +19,7 @@ class _ExportWarehouse extends State<ExportWarehouse> {
 
   @override
   Widget build(BuildContext context) {
+    var transaction = Transaction(widget.host, widget.port, widget.apiKey);
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -24,7 +31,7 @@ class _ExportWarehouse extends State<ExportWarehouse> {
         title: Text("Extragere"),
       ),
       body: FutureBuilder(
-        future: Transaction.queryExport(),
+        future: transaction.queryExport(),
         builder: (context, snapshot) {
           List<Widget> children = [];
           if (snapshot.hasError) {
@@ -56,12 +63,12 @@ class _ExportWarehouse extends State<ExportWarehouse> {
           }
           return (history == null)
               ? Center(
-                child: Column(
+                  child: Column(
                     children: children,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                   ),
-              )
+                )
               : ListView.builder(
                   itemCount: history.length,
                   itemBuilder: (context, i) {
@@ -91,15 +98,18 @@ class _ExportWarehouse extends State<ExportWarehouse> {
               context: context,
               builder: (context) {
                 return ScanDialog(
+                  widget.host,
+                  widget.port,
+                  widget.apiKey,
                   Text('Extragere produs'),
-                  Transaction.insert,
+                  transaction.insert,
                   (id, quantity) => <String, dynamic>{
                     Transaction.productId: id,
                     Transaction.quantity: quantity,
                     Transaction.transactionDate:
                         DateTime.now().toIso8601String(),
                   },
-                  availableStockFunction: Transaction.queryStock,
+                  availableStockFunction: transaction.queryStock,
                   outFlag: true,
                 );
               },

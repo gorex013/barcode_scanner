@@ -5,8 +5,8 @@ import 'package:flutter/rendering.dart';
 class HomePage extends StatefulWidget {
   final host;
   final port;
-
-  const HomePage({Key key, this.host, this.port}) : super(key: key);
+  final apiKey;
+  const HomePage({Key key, this.host, this.port, this.apiKey}) : super(key: key);
   @override
   _HomePageState createState() => _HomePageState();
 }

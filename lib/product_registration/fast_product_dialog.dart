@@ -2,6 +2,12 @@ import 'package:barcode_scanner/database_management/remote_database_management.d
 import 'package:flutter/material.dart';
 
 class FastProductDialog extends StatefulWidget {
+  final host;
+  final port;
+
+  final apiKey;
+
+  const FastProductDialog({Key key, this.host, this.port, this.apiKey}) : super(key: key);
   @override
   State<StatefulWidget> createState() => _ProductDialog();
 }
@@ -70,7 +76,7 @@ class _ProductDialog extends State<FastProductDialog> {
             RaisedButton.icon(
               onPressed: () async {
                 if (nameController.text.length > 0) {
-                  Product.insert({
+                  Product(widget.host, widget.port, widget.apiKey).insert({
                     Product.name: nameController.text,
                     Product.barcode: barcodeController.text,
                     Product.registrationDate: DateTime.now().toIso8601String()
