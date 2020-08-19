@@ -8,6 +8,7 @@ class AuthSettings extends StatefulWidget {
 class _AuthSettings extends State<AuthSettings> {
   var loginController = TextEditingController();
   var passwordController = TextEditingController();
+  var passwordFocus = FocusNode();
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +19,10 @@ class _AuthSettings extends State<AuthSettings> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             child: TextField(
               controller: loginController,
-              textInputAction: TextInputAction.continueAction,
+              textInputAction: TextInputAction.next,
+              onEditingComplete: (){
+                FocusScope.of(context).requestFocus(passwordFocus);
+              },
               decoration: InputDecoration(
                 labelText: "Login:",
               ),
@@ -27,8 +31,9 @@ class _AuthSettings extends State<AuthSettings> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             child: TextField(
+              focusNode: passwordFocus,
               controller: passwordController,
-              textInputAction: TextInputAction.send,
+              textInputAction: TextInputAction.done,
               obscureText: true,
               decoration: InputDecoration(
                 labelText: "Password:",
@@ -37,6 +42,22 @@ class _AuthSettings extends State<AuthSettings> {
           ),
         ],
       ),
+      floatingActionButton: SizedBox(
+        width: MediaQuery.of(context).size.width - 20,
+        child: RaisedButton.icon(
+          onPressed: (){
+//            final directory = await getApplicationDocumentsDirectory();
+//            final apiFile = File('${directory.path}/warehouse.key');
+//            apiFile.writeAsBytes(utf8.encode(apiKeyController.text));
+            Navigator.pop(context, false);
+          },
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          label: Text("Autentificare"),
+          icon: Icon(Icons.done),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
