@@ -41,7 +41,7 @@ class _APIKeySettings extends State<APIKeySettings> {
                     final directory = await getApplicationDocumentsDirectory();
                     final apiFile = File('${directory.path}/warehouse.key');
                     apiFile.writeAsBytes(utf8.encode(apiKeyController.text));
-                    Navigator.pop(context,false);
+                    Navigator.pop(context,true);
                   },
                 ),
               ),
