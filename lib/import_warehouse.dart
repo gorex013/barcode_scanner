@@ -8,7 +8,7 @@ class ImportWarehouse extends StatefulWidget {
   final port;
   final apiKey;
 
-  const ImportWarehouse({Key key, this.host, this.port, this.apiKey})
+  const ImportWarehouse({Key key, this.host, this.port})
       : super(key: key);
 
   @override
@@ -17,10 +17,24 @@ class ImportWarehouse extends StatefulWidget {
 
 class _ImportWarehouse extends State<ImportWarehouse> {
   var history;
+  var apiKey;
+
+  readKey() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final apiFile = File('${directory.path}/warehouse.key');
+    if (!await apiFile.exists()) return null;
+    var _apiKey = utf8.decode(await apiFile.readAsBytes());
+    if (_apiKey.isEmpty) setState(() {
+      apiKey = null;
+    });else setState(() {
+      apiKey=_apiKey;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    var transaction = Transaction(widget.host, widget.port, widget.apiKey);
+    readKey();
+    var transaction = Transaction(widget.host, widget.port, apiKey);
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -78,7 +92,12 @@ class _ImportWarehouse extends State<ImportWarehouse> {
                     return ListTile(
                       title: Text(
                           "${i + 1}. Barcode: ${history[i][Product.barcode]}\nQuantity: ${history[i][Transaction.quantity]}\n"
-                          "Date: ${importDate.day}/${importDate.month}/${importDate.year} ${importDate.hour}:${importDate.minute}"),
+                              "Date: "
+                              "${importDate.day.toString().padLeft(2, '0')}/"
+                              "${importDate.month.toString().padLeft(2, '0')}/"
+                              "${importDate.year} "
+                              "${importDate.hour.toString().padLeft(2, '0')}:"
+                              "${importDate.minute.toString().padLeft(2, '0')}\n",),
                     );
                   },
                 );
@@ -101,7 +120,7 @@ class _ImportWarehouse extends State<ImportWarehouse> {
                 return ScanDialog(
                   widget.host,
                   widget.port,
-                  widget.apiKey,
+                  apiKey,
                   Text('Depozitare produs'),
                   transaction.insert,
                   (id, quantity) => <String, dynamic>{

@@ -5,12 +5,12 @@ import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 class ScanDialog extends StatefulWidget {
   final host;
   final port;
+  final apiKey;
   final title;
   final transactionInsert;
   final mapperFunction;
   final availableStockFunction;
   final outFlag;
-  final apiKey;
 
   static _scan() async {
     return FlutterBarcodeScanner.scanBarcode(
@@ -93,7 +93,7 @@ class _ScanDialog extends State<ScanDialog> {
           widget.mapperFunction(barcodeID,
               int.parse(quantityController.text) * ((widget.outFlag) ? -1 : 1)),
         );
-        Navigator.pop(context);
+        Navigator.pop(context, true);
       },
       icon: Icon(Icons.done),
       label: Text("Terminat"),
@@ -126,8 +126,6 @@ class _ScanDialog extends State<ScanDialog> {
                             ? "Scanați barcod"
                             : (!registered) ? "Înregistrați produsul" : null),
                 controller: scanController,
-                enableInteractiveSelection: false,
-                showCursor: false,
                 onTap: () async {
                   var result = await ScanDialog._scan();
                   if (result == '-1') {
@@ -165,12 +163,6 @@ class _ScanDialog extends State<ScanDialog> {
                 focusNode: quantityFocusNode,
                 keyboardType: TextInputType.number,
                 textInputAction: TextInputAction.done,
-                onSubmitted: (text) {
-                  quantityFocusNode.unfocus();
-                },
-                onTap: () {
-                  FocusScope.of(context).requestFocus(quantityFocusNode);
-                },
                 onEditingComplete: () {
                   quantityFocusNode.unfocus();
                 },

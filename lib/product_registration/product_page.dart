@@ -133,9 +133,7 @@ class _RegisterProduct extends State<RegisterProduct> {
               ),
               barrierDismissible: false,
             );
-            setState(() {
-              needReload = _needReload;
-            });
+            if (_needReload) setState(() {});
           },
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

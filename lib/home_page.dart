@@ -10,10 +10,8 @@ import 'package:path_provider/path_provider.dart';
 class HomePage extends StatefulWidget {
   final host;
   final port;
-  final apiKey;
 
-  const HomePage({Key key, this.host, this.port, this.apiKey})
-      : super(key: key);
+  const HomePage({Key key, this.host, this.port}) : super(key: key);
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -25,15 +23,22 @@ class _HomePageState extends State<HomePage> {
   readKey() async {
     final directory = await getApplicationDocumentsDirectory();
     final apiFile = File('${directory.path}/warehouse.key');
-    if (!await apiFile.exists()) return null;
-    final apiKey = utf8.decode(await apiFile.readAsBytes());
-    if (apiKey.isEmpty) return null;
-    return apiKey;
+    if (!await apiFile.exists()) {
+      setState(() {
+        apiKey = "";
+      });
+      return;
+    }
+    var _apiKey = utf8.decode(await apiFile.readAsBytes());
+    if (_apiKey.isNotEmpty)
+      setState(() {
+        apiKey = _apiKey;
+      });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (apiKey == null) apiKey = widget.apiKey;
+    if (apiKey == null) readKey();
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -46,15 +51,12 @@ class _HomePageState extends State<HomePage> {
                 var needReload =
                     await Navigator.pushNamed(context, '/settings');
                 if (needReload) {
-                  var _apiKey = await readKey();
-                  setState(() {
-                    apiKey = _apiKey;
-                  });
+                  readKey();
                 }
               })
         ],
       ),
-      body: (apiKey != null)
+      body: (apiKey != null && apiKey.isNotEmpty)
           ? HomeBody(
               host: widget.host,
               port: widget.port,
