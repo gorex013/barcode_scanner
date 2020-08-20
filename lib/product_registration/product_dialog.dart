@@ -1,14 +1,16 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:barcode_scanner/database_management/remote_database_management.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:path_provider/path_provider.dart';
 
 class ProductDialog extends StatefulWidget {
   final host;
   final port;
-  final apiKey;
 
-  const ProductDialog({Key key, this.host, this.port, this.apiKey})
-      : super(key: key);
+  const ProductDialog({Key key, this.host, this.port}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _ProductDialog();
@@ -23,11 +25,27 @@ class _ProductDialog extends State<ProductDialog> {
   var barcodeFocusNode = FocusNode();
   var emptyBarcodePressed = false;
 
-  bool barcodeEmpty = true;
+  var barcodeEmpty = true;
+  var apiKey;
+
+  readKey() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final apiFile = File('${directory.path}/warehouse.key');
+    if (!await apiFile.exists())
+      setState(() {
+        apiKey = null;
+      });
+    var _apiKey = utf8.decode(await apiFile.readAsBytes());
+    if (_apiKey.isNotEmpty)
+      setState(() {
+        apiKey = _apiKey;
+      });
+  }
 
   @override
   Widget build(BuildContext context) {
-    var product = Product(widget.host, widget.port, widget.apiKey);
+    if (apiKey == null) readKey();
+    var product = Product(widget.host, widget.port, apiKey);
     if (nameController.text.length == 0)
       nameFocusNode.requestFocus();
     else if (barcodeEmpty) barcodeFocusNode.requestFocus();
@@ -50,13 +68,6 @@ class _ProductDialog extends State<ProductDialog> {
                 focusNode: nameFocusNode,
                 keyboardType: TextInputType.text,
                 textInputAction: TextInputAction.next,
-                onSubmitted: (text) {
-                  nameFocusNode.unfocus();
-                  barcodeFocusNode.requestFocus();
-                },
-                onTap: () {
-                  nameFocusNode.requestFocus();
-                },
                 onEditingComplete: () {
                   setState(() {
                     emptyNamePressed = nameController.text.length == 0;
@@ -99,19 +110,31 @@ class _ProductDialog extends State<ProductDialog> {
             RaisedButton.icon(
               label: Text("Anulare"),
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(context, false);
               },
               icon: Icon(Icons.cancel),
             ),
             RaisedButton.icon(
               onPressed: () async {
+                if (nameController.text.isEmpty) {
+                  setState(() {
+                    emptyNamePressed = true;
+                  });
+                  return;
+                }
+                if (barcodeController.text == "Apasă pentru scanare") {
+                  setState(() {
+                    emptyNamePressed = false;
+                    emptyBarcodePressed = true;
+                  });
+                  return;
+                }
                 product.insert({
                   Product.name: nameController.text,
                   Product.barcode: barcodeController.text,
                   Product.registrationDate: DateTime.now().toIso8601String()
                 });
-                Navigator.pop(context);
-                Navigator.pushReplacementNamed(context, '/register-product');
+                Navigator.pop(context, true);
               },
               icon: Icon(Icons.done),
               label: Text("Terminat"),
