@@ -93,7 +93,6 @@ class Transaction {
       body: data,
       headers: requestHeaders,
     );
-    print(response.body);
     return response;
   }
 
