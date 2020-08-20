@@ -18,7 +18,6 @@ class _APIKeySettings extends State<APIKeySettings> {
   }
 
   var apiKeyController = TextEditingController();
-  var pressedReset = false;
 
   @override
   Widget build(BuildContext context) {
@@ -30,43 +29,47 @@ class _APIKeySettings extends State<APIKeySettings> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             child: TextField(
               controller: apiKeyController,
+              readOnly: true,
               decoration: InputDecoration(
                 labelText: "API key:",
                 suffixIcon: IconButton(
                   icon: Icon(Icons.cancel),
-                  onPressed: () {
+                  onPressed: () async {
                     setState(() {
                       apiKeyController.text = "";
-                      pressedReset = true;
                     });
+                    final directory = await getApplicationDocumentsDirectory();
+                    final apiFile = File('${directory.path}/warehouse.key');
+                    apiFile.writeAsBytes(utf8.encode(apiKeyController.text));
+                    Navigator.pop(context,false);
                   },
                 ),
               ),
             ),
           );
 
-          if (snapshot.hasData && !pressedReset) {
+          if (snapshot.hasData) {
             apiKeyController.text = snapshot.data;
           }
           return apiKeyTextField;
         },
       ),
-      floatingActionButton: SizedBox(
-        width: MediaQuery.of(context).size.width - 20,
-        child: RaisedButton.icon(
-          onPressed: () async {
-            final directory = await getApplicationDocumentsDirectory();
-            final apiFile = File('${directory.path}/warehouse.key');
-            apiFile.writeAsBytes(utf8.encode(apiKeyController.text));
-            Navigator.pop(context, true);
-          },
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          label: Text("Salvare"),
-          icon: Icon(Icons.done),
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+//      floatingActionButton: SizedBox(
+//        width: MediaQuery.of(context).size.width - 20,
+//        child: RaisedButton.icon(
+//          onPressed: () async {
+//            final directory = await getApplicationDocumentsDirectory();
+//            final apiFile = File('${directory.path}/warehouse.key');
+//            apiFile.writeAsBytes(utf8.encode(apiKeyController.text));
+//            Navigator.pop(context, true);
+//          },
+//          shape:
+//              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+//          label: Text("Salvare"),
+//          icon: Icon(Icons.done),
+//        ),
+//      ),
+//      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }

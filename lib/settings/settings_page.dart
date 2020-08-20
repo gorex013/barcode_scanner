@@ -13,12 +13,13 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _APIKeySettingsPage extends State<SettingsPage> {
-
-  bool body=true;
-  final authBody = AuthSettings();
+  bool body = true;
+  var authBody;
   final apiBody = APIKeySettings();
+
   @override
   Widget build(BuildContext context) {
+    authBody = AuthSettings(widget.host, widget.port);
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -29,7 +30,7 @@ class _APIKeySettingsPage extends State<SettingsPage> {
         ),
         title: Text("Setare access"),
       ),
-      body: (body)?authBody:apiBody,
+      body: (body) ? authBody : apiBody,
       bottomNavigationBar: BottomAppBar(
         child: Row(
           children: <Widget>[
