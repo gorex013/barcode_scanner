@@ -154,6 +154,7 @@ class _AuthSettings extends State<AuthSettings> {
                   readOnly: true,
                   decoration: InputDecoration(
                     labelText: "API key:",
+                    helperText: "Câmpul nu este editabil",
                     suffixIcon: IconButton(
                       icon: Icon(Icons.cancel),
                       onPressed: () async {
