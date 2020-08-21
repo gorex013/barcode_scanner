@@ -1,11 +1,6 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:barcode_scanner/database_management/remote_database_management.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:path_provider/path_provider.dart';
-
 class ProductDialog extends StatefulWidget {
   final host;
   final port;
@@ -24,28 +19,11 @@ class _ProductDialog extends State<ProductDialog> {
   var barcodeController = TextEditingController(text: "Apasă pentru scanare");
   var barcodeFocusNode = FocusNode();
   var emptyBarcodePressed = false;
-
   var barcodeEmpty = true;
-  var apiKey;
-
-  readKey() async {
-    final directory = await getApplicationDocumentsDirectory();
-    final apiFile = File('${directory.path}/warehouse.key');
-    if (!await apiFile.exists())
-      setState(() {
-        apiKey = null;
-      });
-    var _apiKey = utf8.decode(await apiFile.readAsBytes());
-    if (_apiKey.isNotEmpty)
-      setState(() {
-        apiKey = _apiKey;
-      });
-  }
 
   @override
   Widget build(BuildContext context) {
-    if (apiKey == null) readKey();
-    var product = Product(widget.host, widget.port, apiKey);
+    var product = Product();
     if (nameController.text.length == 0)
       nameFocusNode.requestFocus();
     else if (barcodeEmpty) barcodeFocusNode.requestFocus();

@@ -6,11 +6,6 @@ import 'package:http/http.dart';
 import 'package:path_provider/path_provider.dart';
 
 class AuthSettings extends StatefulWidget {
-  final host;
-  final port;
-
-  const AuthSettings(this.host, this.port, {Key key}) : super(key: key);
-
   @override
   State<StatefulWidget> createState() => _AuthSettings();
 }
@@ -20,6 +15,7 @@ class _AuthSettings extends State<AuthSettings> {
   var loginController = TextEditingController();
   var passwordController = TextEditingController();
   var confirmPasswordController = TextEditingController();
+  var apiKeyController = TextEditingController();
   var loginFocus = FocusNode();
   var passwordFocus = FocusNode();
   var confirmPasswordFocus = FocusNode();
@@ -29,6 +25,35 @@ class _AuthSettings extends State<AuthSettings> {
   var isEmptyName = false;
   var hidePassword = true;
   var differentPasswords = false;
+
+  readHost() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final hostFile = File('${directory.path}/host.data');
+    if (!await hostFile.exists()) {
+      return null;
+    }
+    var host = utf8.decode(await hostFile.readAsBytes());
+    if (host.isEmpty) return null;
+    return host;
+  }
+
+  readPort() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final portFile = File('${directory.path}/port.data');
+    if (!await portFile.exists()) {
+      return null;
+    }
+    var host = utf8.decode(await portFile.readAsBytes());
+    if (host.isEmpty) return null;
+    return host;
+  }
+
+  readKey() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final apiFile = File('${directory.path}/warehouse.key');
+    final apiKey = utf8.decode(await apiFile.readAsBytes());
+    return apiKey;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +143,41 @@ class _AuthSettings extends State<AuthSettings> {
               : Padding(
                   padding: EdgeInsets.all(0),
                 ),
+          FutureBuilder(
+            future: readKey(),
+            builder: (context, snapshot) {
+              var apiKeyTextField = Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: TextField(
+                  controller: apiKeyController,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: "API key:",
+                    suffixIcon: IconButton(
+                      icon: Icon(Icons.cancel),
+                      onPressed: () async {
+                        setState(() {
+                          apiKeyController.text = "";
+                        });
+                        final directory =
+                            await getApplicationDocumentsDirectory();
+                        final apiFile = File('${directory.path}/warehouse.key');
+                        apiFile
+                            .writeAsBytes(utf8.encode(apiKeyController.text));
+                        Navigator.pop(context, true);
+                      },
+                    ),
+                  ),
+                ),
+              );
+
+              if (snapshot.hasData) {
+                apiKeyController.text = snapshot.data;
+              }
+              return apiKeyTextField;
+            },
+          ),
         ],
       ),
       floatingActionButton: SizedBox(
@@ -125,6 +185,16 @@ class _AuthSettings extends State<AuthSettings> {
         child: RaisedButton.icon(
           onPressed: (!needToRegister)
               ? () async {
+                  var host = await readHost();
+                  var port = await readPort();
+                  if (host == null || port == null) {
+                    Scaffold.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("Setați adresa IP și portul mai întâi!"),
+                      ),
+                    );
+                    return;
+                  }
                   setState(() {
                     isEmptyLogin = loginController.text == null ||
                         loginController.text.isEmpty;
@@ -141,7 +211,7 @@ class _AuthSettings extends State<AuthSettings> {
                     "password": passwordController.text,
                   });
                   var response = await post(
-                    'http://${widget.host}:${widget.port}/api/login',
+                    'http://$host:$port/api/login',
                     body: data,
                     headers: requestHeaders,
                   );
@@ -159,6 +229,8 @@ class _AuthSettings extends State<AuthSettings> {
                   }
                 }
               : () async {
+                  var host = await readHost();
+                  var port = await readPort();
                   setState(() {
                     isEmptyName = nameController.text == null ||
                         nameController.text.isEmpty;
@@ -178,13 +250,13 @@ class _AuthSettings extends State<AuthSettings> {
                     'Accept': 'application/json',
                   };
                   final data = jsonEncode({
-                    "name":nameController.text,
+                    "name": nameController.text,
                     "email": loginController.text,
                     "password": passwordController.text,
                     "password_confirmation": confirmPasswordController.text,
                   });
                   var response = await post(
-                    'http://${widget.host}:${widget.port}/api/register',
+                    'http://$host:$port/api/register',
                     body: data,
                     headers: requestHeaders,
                   );

@@ -1,45 +1,20 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:barcode_scanner/database_management/remote_database_management.dart';
 import 'package:barcode_scanner/product_registration/product_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 
 class RegisterProduct extends StatefulWidget {
-  final host;
-  final port;
-
-  const RegisterProduct({Key key, this.host, this.port}) : super(key: key);
-
   @override
   State<StatefulWidget> createState() => _RegisterProduct();
 }
 
 class _RegisterProduct extends State<RegisterProduct> {
   var needReload;
-  var apiKey;
-
-  readKey() async {
-    final directory = await getApplicationDocumentsDirectory();
-    final apiFile = File('${directory.path}/warehouse.key');
-    if (!await apiFile.exists())
-      setState(() {
-        apiKey = null;
-      });
-    var _apiKey = utf8.decode(await apiFile.readAsBytes());
-    if (_apiKey.isNotEmpty)
-      setState(() {
-        apiKey = _apiKey;
-      });
-  }
 
   @override
   Widget build(BuildContext context) {
-    if (apiKey == null) readKey();
     var history;
-    var product = Product(widget.host, widget.port, apiKey);
-    var transaction = Transaction(widget.host, widget.port, apiKey);
+    var product = Product();
+    var transaction = Transaction();
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -104,7 +79,7 @@ class _RegisterProduct extends State<RegisterProduct> {
                           context: context,
                           builder: (context) => AlertDialog(
                             content: Text(
-                              "Barcode: ${history[i]['barcode']}\n"
+                              "Barcode: ${history[i][Product.barcode]}\n"
                               "Data înregistrării: "
                               "${dateTime.day.toString().padLeft(2, '0')}/"
                               "${dateTime.month.toString().padLeft(2, '0')}/"
@@ -127,10 +102,7 @@ class _RegisterProduct extends State<RegisterProduct> {
           onPressed: () async {
             var _needReload = await showDialog(
               context: context,
-              builder: (context) => ProductDialog(
-                host: widget.host,
-                port: widget.port,
-              ),
+              builder: (context) => ProductDialog(),
               barrierDismissible: false,
             );
             if (_needReload) setState(() {});

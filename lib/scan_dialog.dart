@@ -3,9 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 class ScanDialog extends StatefulWidget {
-  final host;
-  final port;
-  final apiKey;
   final title;
   final transactionInsert;
   final mapperFunction;
@@ -17,7 +14,7 @@ class ScanDialog extends StatefulWidget {
         "#ff4297", "Anulează", true, ScanMode.DEFAULT);
   }
 
-  ScanDialog(this.host, this.port, this.apiKey, this.title,
+  ScanDialog(this.title,
       this.transactionInsert, this.mapperFunction,
       {this.availableStockFunction, this.outFlag = false});
 
@@ -30,16 +27,14 @@ class _ScanDialog extends State<ScanDialog> {
   var quantityController = TextEditingController();
   var quantityFocusNode = FocusNode();
   var registered = true;
-
   var emptyQuantity;
   var exceedQuantity;
   var negativeQuantity;
-
   var scanned;
 
   @override
   Widget build(BuildContext context) {
-    var product = Product(widget.host, widget.port, widget.apiKey);
+    var product = Product();
     var finishButton = RaisedButton.icon(
       onPressed: () async {
         if (scanController.text.isEmpty) {

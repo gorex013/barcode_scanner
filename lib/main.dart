@@ -13,23 +13,37 @@ import 'home_page.dart';
 import 'import_warehouse.dart';
 
 void main() {
-  runApp(App('192.168.88.227', '8000'));
+  runApp(App());
 }
 
 class App extends StatelessWidget {
-  final host;
-  final port;
-
-  readKey() async {
-    var apiKey;
+  readHostAndPort() async {
+    var host;
     var dir = await getApplicationDocumentsDirectory();
-    var apiFile = File('${dir.path}/warehouse.key');
-    if (await apiFile.exists()) {
-      apiKey = utf8.decode(await apiFile.readAsBytes());
+    var hostFile = File('${dir.path}/host.bin');
+    if (await hostFile.exists()) {
+      host = utf8.decode(await hostFile.readAsBytes());
     } else
-      apiKey = null;
-    return apiKey;
+      host = null;
+    var port;
+    var portFile = File('${dir.path}/warehouse.key');
+    if (await portFile.exists()) {
+      port = utf8.decode(await portFile.readAsBytes());
+    } else
+      port = null;
+    return {host, port};
   }
+
+//  readKey() async {
+//    var apiKey;
+//    var dir = await getApplicationDocumentsDirectory();
+//    var apiFile = File('${dir.path}/warehouse.key');
+//    if (await apiFile.exists()) {
+//      apiKey = utf8.decode(await apiFile.readAsBytes());
+//    } else
+//      apiKey = null;
+//    return apiKey;
+//  }
 
   final lightTheme = ThemeData(
     brightness: Brightness.light,
@@ -72,42 +86,25 @@ class App extends StatelessWidget {
     accentColor: Color(0xFFB4969F),
   );
 
-  App(
-    this.host,
-    this.port, {
-    Key key,
-  }) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
-    var apiKey;
-        return MaterialApp(
-          title: 'Manager depozit',
-          initialRoute: '/',
-          routes: {
-            '/': (context) => HomePage(
-                  host: host,
-                  port: port,
-                ),
-            '/register-product': (context) =>
-                RegisterProduct(host: host, port: port),
-            '/fast-register-product': (context) => FastProductDialog(
-                  host: host,
-                  port: port,
-                  apiKey: apiKey,
-                ),
-            '/import-warehouse': (context) =>
-                ImportWarehouse(host: host, port: port),
-            '/export-warehouse': (context) =>
-                ExportWarehouse(host: host, port: port),
-            '/settings': (context) => SettingsPage(host: host, port: port)
-          },
-          theme: lightTheme,
-          darkTheme: darkTheme,
-        );
+    return MaterialApp(
+      title: 'Manager depozit',
+      initialRoute: '/',
+      routes: {
+        '/': (context) => HomePage(),
+        '/register-product': (context) => RegisterProduct(),
+        '/fast-register-product': (context) => FastProductDialog(),
+        '/import-warehouse': (context) => ImportWarehouse(),
+        '/export-warehouse': (context) => ExportWarehouse(),
+        '/settings': (context) => SettingsPage()
+      },
+      theme: lightTheme,
+      darkTheme: darkTheme,
+    );
   }
 }

@@ -1,25 +1,20 @@
-import 'package:barcode_scanner/settings/api_key_settings.dart';
 import 'package:barcode_scanner/settings/auth_settings.dart';
+import 'package:barcode_scanner/settings/network_settings.dart';
 import 'package:flutter/material.dart';
 
 class SettingsPage extends StatefulWidget {
-  final host;
-  final port;
-
-  const SettingsPage({Key key, this.host, this.port}) : super(key: key);
-
   @override
   State<StatefulWidget> createState() => _APIKeySettingsPage();
 }
 
 class _APIKeySettingsPage extends State<SettingsPage> {
-  bool body = true;
-  var authBody;
-  final apiBody = APIKeySettings();
+  bool auth = false;
+  bool net = true;
+  final authBody = AuthSettings();
+  final netBody = NetworkSettings();
 
   @override
   Widget build(BuildContext context) {
-    authBody = AuthSettings(widget.host, widget.port);
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -30,25 +25,25 @@ class _APIKeySettingsPage extends State<SettingsPage> {
         ),
         title: Text("Setare access"),
       ),
-      body: (body) ? authBody : apiBody,
+      body: (auth) ? authBody : netBody,
       bottomNavigationBar: BottomAppBar(
         child: Row(
           children: <Widget>[
             IconButton(
               onPressed: () {
                 setState(() {
-                  body = true;
+                  auth = false;
                 });
               },
-              icon: Icon(Icons.account_circle),
+              icon: Icon(Icons.import_export),
             ),
             IconButton(
               onPressed: () {
                 setState(() {
-                  body = false;
+                  auth = true;
                 });
               },
-              icon: Icon(Icons.vpn_key),
+              icon: Icon(Icons.account_circle),
             ),
           ],
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,

@@ -11,8 +11,7 @@ class ExportWarehouse extends StatefulWidget {
   final host;
   final port;
 
-  const ExportWarehouse({Key key, this.host, this.port})
-      : super(key: key);
+  const ExportWarehouse({Key key, this.host, this.port}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _ExportWarehouse();
@@ -39,7 +38,7 @@ class _ExportWarehouse extends State<ExportWarehouse> {
   @override
   Widget build(BuildContext context) {
     if (apiKey == null) readKey();
-    var transaction = Transaction(widget.host, widget.port, apiKey);
+    var transaction = Transaction();
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -95,14 +94,22 @@ class _ExportWarehouse extends State<ExportWarehouse> {
                     var exportDate =
                         DateTime.parse(history[i][Transaction.transactionDate]);
                     return ListTile(
-                      title: Text(
-                        "${i + 1}. Barcode: ${history[i][Product.barcode]}\nQuantity: ${history[i][Transaction.quantity]}\n"
-                        "Date: "
-                        "${exportDate.day.toString().padLeft(2, '0')}/"
-                        "${exportDate.month.toString().padLeft(2, '0')}/"
-                        "${exportDate.year} "
-                        "${exportDate.hour.toString().padLeft(2, '0')}:"
-                        "${exportDate.minute.toString().padLeft(2, '0')}\n",
+                      title: Text("${i + 1}.  ${history[i][Product.name]} extras ${history[i][Transaction.quantity]} unități"),
+                      onTap: () => showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Text("Detalii"),
+                          content: Text(
+                            "Cantitate: ${history[i][Transaction.quantity]}\n"
+                            "Data tranzacției: "
+                            "${exportDate.day.toString().padLeft(2, '0')}/"
+                            "${exportDate.month.toString().padLeft(2, '0')}/"
+                            "${exportDate.year} "
+                            "${exportDate.hour.toString().padLeft(2, '0')}:"
+                            "${exportDate.minute.toString().padLeft(2, '0')}\n"
+                            "Barcod produs: ${history[i][Product.barcode]}",
+                          ),
+                        ),
                       ),
                     );
                   },
@@ -124,9 +131,6 @@ class _ExportWarehouse extends State<ExportWarehouse> {
               context: context,
               builder: (context) {
                 return ScanDialog(
-                  widget.host,
-                  widget.port,
-                  apiKey,
                   Text('Extragere produs'),
                   transaction.insert,
                   (id, quantity) => <String, dynamic>{
