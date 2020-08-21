@@ -1,14 +1,17 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:barcode_scanner/scan_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'database_management/remote_database_management.dart';
 
 class ExportWarehouse extends StatefulWidget {
   final host;
   final port;
-  final apiKey;
 
-  const ExportWarehouse({Key key, this.host, this.port, this.apiKey})
+  const ExportWarehouse({Key key, this.host, this.port})
       : super(key: key);
 
   @override
@@ -17,10 +20,26 @@ class ExportWarehouse extends StatefulWidget {
 
 class _ExportWarehouse extends State<ExportWarehouse> {
   var history;
+  var apiKey;
+
+  readKey() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final apiFile = File('${directory.path}/warehouse.key');
+    if (!await apiFile.exists())
+      setState(() {
+        apiKey = null;
+      });
+    var _apiKey = utf8.decode(await apiFile.readAsBytes());
+    if (_apiKey.isNotEmpty)
+      setState(() {
+        apiKey = _apiKey;
+      });
+  }
 
   @override
   Widget build(BuildContext context) {
-    var transaction = Transaction(widget.host, widget.port, widget.apiKey);
+    if (apiKey == null) readKey();
+    var transaction = Transaction(widget.host, widget.port, apiKey);
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -77,8 +96,14 @@ class _ExportWarehouse extends State<ExportWarehouse> {
                         DateTime.parse(history[i][Transaction.transactionDate]);
                     return ListTile(
                       title: Text(
-                          "${i + 1}. Barcode: ${history[i][Product.barcode]}\nQuantity: ${history[i][Transaction.quantity]}\n"
-                          "Date: ${exportDate.day}/${exportDate.month}/${exportDate.year} ${exportDate.hour}:${exportDate.minute}"),
+                        "${i + 1}. Barcode: ${history[i][Product.barcode]}\nQuantity: ${history[i][Transaction.quantity]}\n"
+                        "Date: "
+                        "${exportDate.day.toString().padLeft(2, '0')}/"
+                        "${exportDate.month.toString().padLeft(2, '0')}/"
+                        "${exportDate.year} "
+                        "${exportDate.hour.toString().padLeft(2, '0')}:"
+                        "${exportDate.minute.toString().padLeft(2, '0')}\n",
+                      ),
                     );
                   },
                 );
@@ -95,13 +120,13 @@ class _ExportWarehouse extends State<ExportWarehouse> {
           label: Text("Extragere"),
           icon: Icon(Icons.arrow_upward),
           onPressed: () async {
-            showDialog(
+            var needReload = await showDialog(
               context: context,
               builder: (context) {
                 return ScanDialog(
                   widget.host,
                   widget.port,
-                  widget.apiKey,
+                  apiKey,
                   Text('Extragere produs'),
                   transaction.insert,
                   (id, quantity) => <String, dynamic>{
@@ -116,6 +141,7 @@ class _ExportWarehouse extends State<ExportWarehouse> {
               },
               barrierDismissible: false,
             );
+            if (needReload) setState(() {});
           },
         ),
       ),

@@ -85,13 +85,6 @@ class App extends StatelessWidget {
       DeviceOrientation.portraitDown,
     ]);
     var apiKey;
-    return FutureBuilder(
-      future: readKey(),
-      builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-        if (snapshot.hasError) {
-          apiKey = null;
-        } else if (snapshot.hasData) apiKey = snapshot.data;
-        if (apiKey == "") apiKey = null;
         return MaterialApp(
           title: 'Manager depozit',
           initialRoute: '/',
@@ -99,25 +92,22 @@ class App extends StatelessWidget {
             '/': (context) => HomePage(
                   host: host,
                   port: port,
-                  apiKey: apiKey,
                 ),
             '/register-product': (context) =>
-                RegisterProduct(host: host, port: port, apiKey: apiKey),
+                RegisterProduct(host: host, port: port),
             '/fast-register-product': (context) => FastProductDialog(
                   host: host,
                   port: port,
                   apiKey: apiKey,
                 ),
             '/import-warehouse': (context) =>
-                ImportWarehouse(host: host, port: port, apiKey: apiKey),
+                ImportWarehouse(host: host, port: port),
             '/export-warehouse': (context) =>
-                ExportWarehouse(host: host, port: port, apiKey: apiKey),
+                ExportWarehouse(host: host, port: port),
             '/settings': (context) => SettingsPage(host: host, port: port)
           },
           theme: lightTheme,
           darkTheme: darkTheme,
         );
-      },
-    );
   }
 }

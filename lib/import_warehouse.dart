@@ -1,12 +1,15 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:barcode_scanner/scan_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'database_management/remote_database_management.dart';
 
 class ImportWarehouse extends StatefulWidget {
   final host;
   final port;
-  final apiKey;
 
   const ImportWarehouse({Key key, this.host, this.port})
       : super(key: key);

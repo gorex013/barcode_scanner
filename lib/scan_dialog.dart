@@ -175,7 +175,7 @@ class _ScanDialog extends State<ScanDialog> {
             RaisedButton.icon(
               label: Text("Anulare"),
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(context, false);
               },
               icon: Icon(Icons.cancel),
             ),
