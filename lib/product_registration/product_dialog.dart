@@ -1,5 +1,6 @@
 import 'package:barcode_scanner/database_management/database_management.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 class ProductDialog extends StatefulWidget {
@@ -14,21 +15,19 @@ class ProductDialog extends StatefulWidget {
 
 class _ProductDialog extends State<ProductDialog> {
   var nameController = TextEditingController();
-  var emptyNamePressed = false;
   var nameFocusNode = FocusNode();
+  var nameError = false;
 
-  var barcodeController = TextEditingController(text: "Apasă pentru scanare");
+  var barcodeController = TextEditingController();
   var barcodeFocusNode = FocusNode();
-  var emptyBarcodePressed = false;
-  var barcodeEmpty = true;
+  var barcodeError = false;
   var manually = false;
 
   @override
   Widget build(BuildContext context) {
-    var product = Product();
-    if (nameController.text.length == 0)
-      nameFocusNode.requestFocus();
-    else if (barcodeEmpty) barcodeFocusNode.requestFocus();
+//    if (nameController.text.isEmpty)
+//      nameFocusNode.requestFocus();
+//    else if (barcodeEmpty) barcodeFocusNode.requestFocus();
     return SimpleDialog(
       title: Text("Înregistrare"),
       children: <Widget>[
@@ -40,7 +39,7 @@ class _ProductDialog extends State<ProductDialog> {
                 decoration: InputDecoration(
                   labelText: "Denumire: ",
                   hintText: "Denumire produs ... ",
-                  errorText: (emptyNamePressed)
+                  errorText: (nameError)
                       ? "Denumirea produsului este obligatorie"
                       : null,
                 ),
@@ -48,42 +47,74 @@ class _ProductDialog extends State<ProductDialog> {
                 focusNode: nameFocusNode,
                 keyboardType: TextInputType.text,
                 textInputAction: TextInputAction.next,
+                textCapitalization: TextCapitalization.sentences,
+                autofocus: true,
                 onEditingComplete: () {
-                  setState(() {
-                    emptyNamePressed = nameController.text.length == 0;
-                  });
+                  barcodeFocusNode.requestFocus();
                 },
               ),
-              Checkbox(
-                value: manually,
-                onChanged: (manually) ? (value) {} : null,
+              Row(
+                children: [
+                  Checkbox(
+                    value: manually,
+                    onChanged: (value) {
+                      setState(() {
+                        manually = value;
+                      });
+                    },
+                  ),
+                  Text("Introducere manuală a codului de bare"),
+                ],
               ),
-              TextField(
-                decoration: InputDecoration(
-                    labelText: "Barcode: ",
-                    errorText: (emptyBarcodePressed) ? "Scanați barcod" : null),
-                controller: barcodeController,
-                focusNode: barcodeFocusNode,
-                enableInteractiveSelection: false,
-                showCursor: false,
-                onTap: () async {
-                  var result = await FlutterBarcodeScanner.scanBarcode(
-                      "#ff4297", "Anulează", true, ScanMode.DEFAULT);
-                  if (result == '-1') {
-                    setState(() {
-                      barcodeController.text = "Apasă pentru scanare";
-                      barcodeEmpty = true;
-                      emptyBarcodePressed = true;
-                    });
-                    return;
-                  }
-                  setState(() {
-                    barcodeController.text = result;
-                    barcodeEmpty = false;
-                    emptyBarcodePressed = false;
-                  });
-                },
-              ),
+              (manually)
+                  ? TextField(
+                      decoration: InputDecoration(
+                        labelText: "Cod de bare: ",
+                        hintText: "Introduceți manual ...",
+                        helperText:
+                            "Cod din litere mari și cifre sau doar cifre",
+                        errorText: (barcodeError)
+                            ? "Codul de bare este obligatoriu"
+                            : null,
+                      ),
+                      controller: barcodeController,
+                      focusNode: barcodeFocusNode,
+                      textCapitalization: TextCapitalization.characters,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r"[A-Z0-9]+"))
+                      ],
+                      onEditingComplete: () {
+                        barcodeFocusNode.unfocus();
+                      },
+                    )
+                  : Column(
+                      children: [
+                        RaisedButton.icon(
+                          label: Text("Scanare"),
+                          onPressed: () async {
+                            var result =
+                                await FlutterBarcodeScanner.scanBarcode(
+                                    "#ff4297",
+                                    "Anulează",
+                                    true,
+                                    ScanMode.DEFAULT);
+                            if (result == '-1') {
+                              setState(() {
+                                barcodeController.text = "";
+                              });
+                              return;
+                            }
+                            setState(() {
+                              barcodeController.text = result;
+                            });
+                          },
+                          icon: Icon(Icons.settings_overscan),
+                        ),
+                        Text("Barcod: ${barcodeController.text}")
+                      ],
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                    ),
             ],
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -94,31 +125,25 @@ class _ProductDialog extends State<ProductDialog> {
             RaisedButton.icon(
               label: Text("Anulare"),
               onPressed: () {
-                Navigator.pop(context, false);
+                Navigator.pop(context);
               },
               icon: Icon(Icons.cancel),
             ),
             RaisedButton.icon(
               onPressed: () async {
-                if (nameController.text.isEmpty) {
-                  setState(() {
-                    emptyNamePressed = true;
-                  });
-                  return;
-                }
-                if (barcodeController.text == "Apasă pentru scanare") {
-                  setState(() {
-                    emptyNamePressed = false;
-                    emptyBarcodePressed = true;
-                  });
-                  return;
-                }
-                product.insert({
-                  Product.name: nameController.text,
-                  Product.barcode: barcodeController.text,
-                  Product.registrationDate: DateTime.now().toIso8601String()
+                setState(() {
+                  nameError = nameController.text.isEmpty;
+                  barcodeError = barcodeController.text.isEmpty;
                 });
-                Navigator.pop(context, true);
+                if (nameError || barcodeError) {
+                  return;
+                }
+                Operation.instance.insert({
+                  Operation.json:
+                      "{\"product\":{\"${Product.name}\":\"${nameController.text}\","
+                          "\"barcode\":\"${barcodeController.text}\",\"${Product.registrationDate}\":\"${DateTime.now().toIso8601String()}\"}}"
+                });
+                Navigator.pop(context);
               },
               icon: Icon(Icons.done),
               label: Text("Terminat"),
