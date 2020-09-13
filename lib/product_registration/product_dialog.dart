@@ -1,6 +1,7 @@
-import 'package:barcode_scanner/database_management/remote_database_management.dart';
+import 'package:barcode_scanner/database_management/database_management.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+
 class ProductDialog extends StatefulWidget {
   final host;
   final port;
@@ -20,6 +21,7 @@ class _ProductDialog extends State<ProductDialog> {
   var barcodeFocusNode = FocusNode();
   var emptyBarcodePressed = false;
   var barcodeEmpty = true;
+  var manually = false;
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +53,10 @@ class _ProductDialog extends State<ProductDialog> {
                     emptyNamePressed = nameController.text.length == 0;
                   });
                 },
+              ),
+              Checkbox(
+                value: manually,
+                onChanged: (manually) ? (value) {} : null,
               ),
               TextField(
                 decoration: InputDecoration(

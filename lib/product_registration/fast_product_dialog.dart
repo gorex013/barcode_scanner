@@ -1,4 +1,4 @@
-import 'package:barcode_scanner/database_management/remote_database_management.dart';
+import 'package:barcode_scanner/database_management/database_management.dart';
 import 'package:flutter/material.dart';
 
 class FastProductDialog extends StatefulWidget {
