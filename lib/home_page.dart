@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:http/http.dart';
 import 'package:path_provider/path_provider.dart';
-
+import 'package:connectivity/connectivity.dart';
 import 'product_registration/product_dialog.dart';
 
 class HomePage extends StatefulWidget {
@@ -68,12 +68,20 @@ class _HomePageState extends State<HomePage> {
   }
 
   networkCheck() async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult != ConnectivityResult.wifi) {
+      setState(() {
+        networkError = "Nu sunteti connectat la rețeaua locală";
+      });
+      return;
+    }
     if (host == null || port == null || host.isEmpty || port.isEmpty) {
       print(host);
       print(port);
       setState(() {
         networkError = "Introduceți IP și port în setări";
       });
+      return;
     }
     try {
       await Socket.connect(host, int.tryParse(port));
@@ -93,6 +101,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     if (host == null) readHost();
     if (port == null) readPort();
+    networkCheck();
     return Scaffold(
       appBar: AppBar(
         title: Text(
