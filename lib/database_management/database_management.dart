@@ -1,6 +1,14 @@
 import 'dart:convert';
-import 'dart:io';
+
+//import 'dart:io';
 import 'package:http/http.dart';
+
+//import 'package:path_provider/path_provider.dart';
+//
+import 'dart:io';
+
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 
 class Product {
@@ -131,6 +139,7 @@ class Transaction {
         await get('http://$host:$port/api/transaction?api_token=$apiKey');
     return jsonDecode(source.body);
   }
+
   queryAll() async {
     var apiKey = await readKey();
     var host = await readHost();
@@ -189,4 +198,59 @@ class Transaction {
   }
 
   update(Map<String, dynamic> row) async {}
+}
+
+class Operation {
+  static final _databaseName = "operation_db.db";
+  static final _databaseVersion = 1;
+
+  static final table = 'operations';
+
+  static final id = 'id';
+  static final json = 'json';
+
+  // make this a singleton class
+  Operation._privateConstructor();
+
+  static final Operation instance = Operation._privateConstructor();
+
+  // only have a single app-wide reference to the database
+  static Database _database;
+
+  Future<Database> get database async {
+    if (_database != null) return _database;
+    _database = await _initDatabase();
+    return _database;
+  }
+
+  _initDatabase() async {
+    Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    String path = join(documentsDirectory.path, _databaseName);
+    return await openDatabase(path,
+        version: _databaseVersion, onCreate: _onCreate);
+  }
+
+  Future _onCreate(Database db, int version) async {
+    await db.execute('''
+          CREATE TABLE $table (
+            $id INTEGER PRIMARY KEY AUTOINCREMENT,
+            $json TEXT NOT NULL UNIQUE
+          )
+          ''');
+  }
+
+  Future query() async {
+    Database db = await instance.database;
+    return await db.query(table);
+  }
+
+  Future<int> insert(Map<String, dynamic> row) async {
+    Database db = await instance.database;
+    return await db.insert(table, row);
+  }
+
+  Future<int> delete(int anId) async {
+    Database db = await instance.database;
+    return await db.delete(table, where: '$id = ?', whereArgs: [anId]);
+  }
 }

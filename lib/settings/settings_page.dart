@@ -10,7 +10,6 @@ class SettingsPage extends StatefulWidget {
 class _APIKeySettingsPage extends State<SettingsPage> {
   bool auth = false;
   bool net = true;
-  final authBody = AuthSettings();
   final netBody = NetworkSettings();
 
   @override
@@ -25,30 +24,7 @@ class _APIKeySettingsPage extends State<SettingsPage> {
         ),
         title: Text("Setare access"),
       ),
-      body: (auth) ? authBody : netBody,
-      bottomNavigationBar: BottomAppBar(
-        child: Row(
-          children: <Widget>[
-            IconButton(
-              onPressed: () {
-                setState(() {
-                  auth = false;
-                });
-              },
-              icon: Icon(Icons.import_export),
-            ),
-            IconButton(
-              onPressed: () {
-                setState(() {
-                  auth = true;
-                });
-              },
-              icon: Icon(Icons.account_circle),
-            ),
-          ],
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        ),
-      ),
+      body:netBody,
     );
   }
 }

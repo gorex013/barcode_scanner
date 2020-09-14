@@ -1,50 +1,14 @@
-import 'dart:convert';
-import 'dart:io';
-
-import 'package:barcode_scanner/product_registration/fast_product_dialog.dart';
-import 'package:barcode_scanner/product_registration/product_page.dart';
 import 'package:barcode_scanner/settings/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
 
-import 'export_warehouse.dart';
 import 'home_page.dart';
-import 'import_warehouse.dart';
 
 void main() {
   runApp(App());
 }
 
 class App extends StatelessWidget {
-  readHostAndPort() async {
-    var host;
-    var dir = await getApplicationDocumentsDirectory();
-    var hostFile = File('${dir.path}/host.bin');
-    if (await hostFile.exists()) {
-      host = utf8.decode(await hostFile.readAsBytes());
-    } else
-      host = null;
-    var port;
-    var portFile = File('${dir.path}/warehouse.key');
-    if (await portFile.exists()) {
-      port = utf8.decode(await portFile.readAsBytes());
-    } else
-      port = null;
-    return {host, port};
-  }
-
-//  readKey() async {
-//    var apiKey;
-//    var dir = await getApplicationDocumentsDirectory();
-//    var apiFile = File('${dir.path}/warehouse.key');
-//    if (await apiFile.exists()) {
-//      apiKey = utf8.decode(await apiFile.readAsBytes());
-//    } else
-//      apiKey = null;
-//    return apiKey;
-//  }
-
   final lightTheme = ThemeData(
     brightness: Brightness.light,
     primarySwatch: MaterialColor(
@@ -97,14 +61,15 @@ class App extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => HomePage(),
-        '/register-product': (context) => RegisterProduct(),
-        '/fast-register-product': (context) => FastProductDialog(),
-        '/import-warehouse': (context) => ImportWarehouse(),
-        '/export-warehouse': (context) => ExportWarehouse(),
+//        '/register-product': (context) => RegisterProduct(),
+//        '/fast-register-product': (context) => FastProductDialog(),
+//        '/import-warehouse': (context) => ImportWarehouse(),
+//        '/export-warehouse': (context) => ExportWarehouse(),
         '/settings': (context) => SettingsPage()
       },
       theme: lightTheme,
       darkTheme: darkTheme,
     );
   }
+
 }

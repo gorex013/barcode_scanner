@@ -33,9 +33,9 @@ class _NetworkSettings extends State<NetworkSettings> {
     if (!await portFile.exists()) {
       return null;
     }
-    var host = utf8.decode(await portFile.readAsBytes());
-    if (host.isEmpty) return null;
-    return host;
+    var port = utf8.decode(await portFile.readAsBytes());
+    if (port.isEmpty) return null;
+    return port;
   }
 
   @override

@@ -4,11 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 class ProductDialog extends StatefulWidget {
-  final host;
-  final port;
-
-  const ProductDialog({Key key, this.host, this.port}) : super(key: key);
-
   @override
   State<StatefulWidget> createState() => _ProductDialog();
 }
@@ -110,7 +105,14 @@ class _ProductDialog extends State<ProductDialog> {
                           },
                           icon: Icon(Icons.settings_overscan),
                         ),
-                        Text("Barcod: ${barcodeController.text}")
+                        Text(
+                          "Barcod: ${barcodeController.text}",
+                          style: TextStyle(
+                            color: (barcodeError) ? Colors.red : Colors.green,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
                       ],
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,10 +140,16 @@ class _ProductDialog extends State<ProductDialog> {
                 if (nameError || barcodeError) {
                   return;
                 }
-                Operation.instance.insert({
-                  Operation.json:
-                      "{\"product\":{\"${Product.name}\":\"${nameController.text}\","
-                          "\"barcode\":\"${barcodeController.text}\",\"${Product.registrationDate}\":\"${DateTime.now().toIso8601String()}\"}}"
+                var instance = Operation.instance;
+                instance.insert({
+                  Operation.json: "{"
+                      "\"product\":"
+                      "{"
+                      "\"${Product.name}\":\"${nameController.text}\","
+                      "\"barcode\":\"${barcodeController.text}\","
+                      "\"${Product.registrationDate}\":\"${DateTime.now().toIso8601String()}\""
+                      "}"
+                      "}"
                 });
                 Navigator.pop(context);
               },
