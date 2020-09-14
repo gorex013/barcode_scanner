@@ -1,4 +1,3 @@
-import 'package:barcode_scanner/settings/auth_settings.dart';
 import 'package:barcode_scanner/settings/network_settings.dart';
 import 'package:flutter/material.dart';
 

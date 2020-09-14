@@ -102,24 +102,37 @@ class _HomePageState extends State<HomePage> {
           IconButton(
               icon: Icon(Icons.sync),
               onPressed: () async {
+                networkCheck();
                 var db = Operation.instance;
                 var rows = await db.query();
+                var k = 0;
                 for (var i = 0; i < rows.length; ++i) {
                   final id = rows[i][Operation.id];
                   final response = await post(
                       "http://$host:$port/api/operations",
                       body: {'json': rows[i][Operation.json]});
-                  print(response.body);
                   if (response.statusCode == 201) {
                     await db.delete(id);
-                  } else {
-                    setState(() {
-                      networkError =
-                          "Sincronizarea cu serverul principal a eșuat";
-                    });
-                    return;
+                    ++k;
                   }
                 }
+
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text("Stare sincronizare"),
+                        content: Text(
+                          (rows.length != 0)
+                              ? "Operațiuni $k/${rows.length}"
+                              : "Nimic de sincronizat",
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      );
+                    });
                 setState(() {
                   networkError = "";
                 });
