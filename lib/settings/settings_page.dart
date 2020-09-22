@@ -1,5 +1,5 @@
-import 'package:barcode_scanner/settings/network_settings.dart';
 import 'package:flutter/material.dart';
+import 'network_settings.dart';
 
 class SettingsPage extends StatefulWidget {
   @override

@@ -2,13 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:barcode_scanner/database_management/database_management.dart';
+import 'package:barcode_scanner/product_registration/product_dialog.dart';
 import 'package:barcode_scanner/scan_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:http/http.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:connectivity/connectivity.dart';
-import 'product_registration/product_dialog.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -18,8 +18,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String host;
   String port;
-
   String networkError;
+  var reload = true;
 
   readHost() async {
     final directory = await getApplicationDocumentsDirectory();
@@ -76,10 +76,9 @@ class _HomePageState extends State<HomePage> {
       return;
     }
     if (host == null || port == null || host.isEmpty || port.isEmpty) {
-      print(host);
-      print(port);
       setState(() {
         networkError = "Introduceți IP și port în setări";
+        reload = true;
       });
       return;
     }
@@ -87,11 +86,13 @@ class _HomePageState extends State<HomePage> {
       await Socket.connect(host, int.tryParse(port));
       setState(() {
         networkError = "";
+        reload = false;
       });
     } catch (Exception) {
       setState(() {
         networkError =
             "Nu există conexiune către IP și port introduse. Verificați setările.";
+        reload = true;
       });
       return;
     }
@@ -101,7 +102,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     if (host == null) readHost();
     if (port == null) readPort();
-    networkCheck();
+    if (reload) networkCheck();
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -118,9 +119,9 @@ class _HomePageState extends State<HomePage> {
                 for (var i = 0; i < rows.length; ++i) {
                   final id = rows[i][Operation.id];
                   final response = await post(
-                      "http://$host:$port/api/operations",
+                      "http://$host:$port/raw_data",
                       body: {'json': rows[i][Operation.json]});
-                  if (response.statusCode == 201) {
+                  if (response.statusCode == 200) {
                     await db.delete(id);
                     ++k;
                   }
