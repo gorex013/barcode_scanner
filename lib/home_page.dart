@@ -118,8 +118,7 @@ class _HomePageState extends State<HomePage> {
                 var k = 0;
                 for (var i = 0; i < rows.length; ++i) {
                   final id = rows[i][Operation.id];
-                  final response = await post(
-                      "http://$host:$port/raw_data",
+                  final response = await post("http://$host:$port/raw_data",
                       body: {'json': rows[i][Operation.json]});
                   if (response.statusCode == 200) {
                     await db.delete(id);
@@ -183,64 +182,13 @@ class HomeBody extends StatefulWidget {
 class _HomeBody extends State<HomeBody> {
   @override
   Widget build(BuildContext context) {
+    var neededHeight = 80.0;
     return Scaffold(
       body: Column(
         children: <Widget>[
-          Row(
-            children: [
-              SizedBox(
-                width: MediaQuery.of(context).size.width / 2 - 10,
-                child: RaisedButton.icon(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(20),
-                    ),
-                  ),
-                  label: Text("Depozitare produse"),
-                  icon: Icon(Icons.arrow_downward),
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return ScanDialog(
-                          Text('Depozitare produs'),
-                        );
-                      },
-                      barrierDismissible: false,
-                    );
-                  },
-                ),
-              ),
-              SizedBox(
-                width: MediaQuery.of(context).size.width / 2 - 10,
-                child: RaisedButton.icon(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(20),
-                    ),
-                  ),
-                  label: Text("Extragere produse"),
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return ScanDialog(
-                          Text('Extragere produs'),
-                          outFlag: true,
-                        );
-                      },
-                      barrierDismissible: false,
-                    );
-                  },
-                  icon: Icon(Icons.arrow_upward),
-                ),
-              ),
-            ],
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.center,
-          ),
           SizedBox(
             width: MediaQuery.of(context).size.width - 10,
+            height: neededHeight,
             child: RaisedButton.icon(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(
@@ -258,9 +206,57 @@ class _HomeBody extends State<HomeBody> {
               },
             ),
           ),
+          SizedBox(
+            width: MediaQuery.of(context).size.width - 10,
+            height: neededHeight,
+            child: RaisedButton.icon(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(20),
+                ),
+              ),
+              label: Text("Depozitare produse"),
+              icon: Icon(Icons.arrow_downward),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return ScanDialog(
+                      Text('Depozitare produs'),
+                    );
+                  },
+                  barrierDismissible: false,
+                );
+              },
+            ),
+          ),
+          SizedBox(
+            width: MediaQuery.of(context).size.width - 10,
+            height: neededHeight,
+            child: RaisedButton.icon(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(20),
+                ),
+              ),
+              label: Text("Extragere produse"),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return ScanDialog(
+                      Text('Extragere produs'),
+                      outFlag: true,
+                    );
+                  },
+                  barrierDismissible: false,
+                );
+              },
+              icon: Icon(Icons.arrow_upward),
+            ),
+          ),
         ],
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
       ),
     );
   }

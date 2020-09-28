@@ -102,6 +102,8 @@ class _ProductDialog extends State<ProductDialog> {
                             setState(() {
                               barcodeController.text = result;
                             });
+                            if (nameController.text.isEmpty)
+                              nameFocusNode.requestFocus();
                           },
                           icon: Icon(Icons.settings_overscan),
                         ),

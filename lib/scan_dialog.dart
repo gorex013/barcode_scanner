@@ -106,6 +106,7 @@ class _ScanDialog extends State<ScanDialog> {
                     value: manually,
                     onChanged: (value) {
                       setState(() {
+                        if (manually)
                         manually = value;
                       });
                     },
@@ -151,6 +152,8 @@ class _ScanDialog extends State<ScanDialog> {
                               setState(() {
                                 barcodeController.text = "";
                               });
+                              if (quantityController.text.isEmpty)
+                                quantityFocusNode.requestFocus();
                               return;
                             }
                             setState(() {
