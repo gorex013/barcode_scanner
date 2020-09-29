@@ -18,10 +18,12 @@ class _ProductDialog extends State<ProductDialog> {
   var barcodeError = false;
   var manually = false;
 
+  var outOfScanner = true;
+
   @override
   Widget build(BuildContext context) {
-//    if (nameController.text.isEmpty)
-//      nameFocusNode.requestFocus();
+    if (outOfScanner && nameController.text.isEmpty)
+      nameFocusNode.requestFocus();
 //    else if (barcodeEmpty) barcodeFocusNode.requestFocus();
     return SimpleDialog(
       title: Text("Înregistrare"),
@@ -41,7 +43,8 @@ class _ProductDialog extends State<ProductDialog> {
                 controller: nameController,
                 focusNode: nameFocusNode,
                 keyboardType: TextInputType.text,
-                textInputAction: TextInputAction.next,
+                textInputAction:
+                    (manually) ? TextInputAction.next : TextInputAction.done,
                 textCapitalization: TextCapitalization.sentences,
                 autofocus: true,
                 onEditingComplete: () {
@@ -87,6 +90,10 @@ class _ProductDialog extends State<ProductDialog> {
                         RaisedButton.icon(
                           label: Text("Scanare"),
                           onPressed: () async {
+                            FocusScope.of(context).unfocus();
+                            setState(() {
+                              outOfScanner = false;
+                            });
                             var result =
                                 await FlutterBarcodeScanner.scanBarcode(
                                     "#ff4297",
@@ -96,14 +103,14 @@ class _ProductDialog extends State<ProductDialog> {
                             if (result == '-1') {
                               setState(() {
                                 barcodeController.text = "";
+                                outOfScanner = true;
                               });
                               return;
                             }
                             setState(() {
                               barcodeController.text = result;
+                              outOfScanner = true;
                             });
-                            if (nameController.text.isEmpty)
-                              nameFocusNode.requestFocus();
                           },
                           icon: Icon(Icons.settings_overscan),
                         ),

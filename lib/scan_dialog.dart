@@ -15,10 +15,10 @@ class ScanDialog extends StatefulWidget {
 
 class _ScanDialog extends State<ScanDialog> {
   var barcodeController = TextEditingController();
+  var outOfScanner = true;
   var barcodeError = false;
   var quantityController = TextEditingController();
   var quantityError = false;
-  var registeredError = false;
   var negativeQuantityError = false;
   var quantityFocusNode = FocusNode();
 
@@ -27,22 +27,27 @@ class _ScanDialog extends State<ScanDialog> {
   var manually = false;
 
   @override
+  void dispose() {
+    barcodeController.dispose();
+    quantityController.dispose();
+    barcodeFocusNode.dispose();
+    quantityFocusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (outOfScanner && quantityController.text.isEmpty)
+      quantityFocusNode.requestFocus();
     var finishButton = RaisedButton.icon(
       onPressed: () async {
-//        var barcodeID = await product.queryId(barcodeController.text);
         var number = int.tryParse(quantityController.text, radix: 10);
         setState(() {
           barcodeError = barcodeController.text.isEmpty;
           quantityError = quantityController.text.isEmpty;
-//          registeredError = barcodeID == null;
           negativeQuantityError = number <= 0;
         });
-        if (barcodeError ||
-            quantityError ||
-            registeredError ||
-            negativeQuantityError) return;
-//        barcodeID = barcodeID[0][Product.id];
+        if (barcodeError || quantityError || negativeQuantityError) return;
         await Operation.instance.insert(
           {
             Operation.json: "{"
@@ -59,20 +64,6 @@ class _ScanDialog extends State<ScanDialog> {
       },
       icon: Icon(Icons.done),
       label: Text("Terminat"),
-    );
-    var registerButton = RaisedButton.icon(
-      onPressed: () async {
-        var _unregistred = await Navigator.pushNamed(
-            context, '/fast-register-product',
-            arguments: barcodeController.text);
-        setState(
-          () {
-            registeredError = _unregistred;
-          },
-        );
-      },
-      icon: Icon(Icons.add),
-      label: Text("Înregistrează"),
     );
     return SimpleDialog(
       title: widget.title,
@@ -94,7 +85,8 @@ class _ScanDialog extends State<ScanDialog> {
                 controller: quantityController,
                 focusNode: quantityFocusNode,
                 keyboardType: TextInputType.number,
-                textInputAction: TextInputAction.next,
+                textInputAction:
+                    (manually) ? TextInputAction.next : TextInputAction.done,
                 onEditingComplete: () {
                   barcodeFocusNode.requestFocus();
                 },
@@ -106,7 +98,6 @@ class _ScanDialog extends State<ScanDialog> {
                     value: manually,
                     onChanged: (value) {
                       setState(() {
-                        if (manually)
                         manually = value;
                       });
                     },
@@ -130,18 +121,21 @@ class _ScanDialog extends State<ScanDialog> {
                       controller: barcodeController,
                       focusNode: barcodeFocusNode,
                       textCapitalization: TextCapitalization.characters,
+                      textInputAction: TextInputAction.done,
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(RegExp(r"[A-Z0-9]+"))
                       ],
-                      onEditingComplete: () {
-                        barcodeFocusNode.unfocus();
-                      },
                     )
                   : Column(
                       children: [
                         RaisedButton.icon(
                           label: Text("Scanare"),
                           onPressed: () async {
+                            FocusScope.of(context).unfocus();
+                            setState(() {
+                              outOfScanner = false;
+                            });
+//                            quantityFocusNode.unfocus();
                             var result =
                                 await FlutterBarcodeScanner.scanBarcode(
                                     "#ff4297",
@@ -151,13 +145,13 @@ class _ScanDialog extends State<ScanDialog> {
                             if (result == '-1') {
                               setState(() {
                                 barcodeController.text = "";
+                                outOfScanner = true;
                               });
-                              if (quantityController.text.isEmpty)
-                                quantityFocusNode.requestFocus();
                               return;
                             }
                             setState(() {
                               barcodeController.text = result;
+                              outOfScanner = true;
                             });
                           },
                           icon: Icon(Icons.settings_overscan),
@@ -186,7 +180,7 @@ class _ScanDialog extends State<ScanDialog> {
               },
               icon: Icon(Icons.cancel),
             ),
-            (registeredError) ? registerButton : finishButton
+            finishButton
           ],
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
