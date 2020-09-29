@@ -255,6 +255,22 @@ class _HomeBody extends State<HomeBody> {
               icon: Icon(Icons.arrow_upward),
             ),
           ),
+          SizedBox(
+            width: MediaQuery.of(context).size.width - 10,
+            height: neededHeight,
+            child: RaisedButton.icon(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(20),
+                ),
+              ),
+              label: Text("Vizualizare operațiuni"),
+              onPressed: () {
+                Navigator.pushNamed(context, '/operations-view');
+              },
+              icon: Icon(Icons.format_list_numbered),
+            ),
+          ),
         ],
         mainAxisAlignment: MainAxisAlignment.spaceAround,
       ),
